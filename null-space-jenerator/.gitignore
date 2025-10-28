@@ -1,0 +1,34 @@
+# Build directories
+build/
+builds/
+Builds/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.vst3
+*.app
+*.component
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# Windows
+Thumbs.db
