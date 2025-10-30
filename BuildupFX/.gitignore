@@ -1,0 +1,48 @@
+# Build folders
+Builds/
+build/
+cmake-build-*/
+
+# IDE files
+.vs/
+.vscode/
+*.xcodeproj/
+*.xcworkspace/
+*.sln
+*.vcxproj*
+*.user
+*.suo
+*.opensdf
+*.sdf
+.DS_Store
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.vst3
+*.component
+*.dylib
+*.dll
+*.so
+
+# JUCE generated files
+JuceLibraryCode/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.tmp
+
+# Artefacts
+*_artefacts/
