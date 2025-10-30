@@ -3,69 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NateFTBL Music Visualizer</title>
+    <title>Music Visualizer - NateFTBL</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <!-- Canvas Container (Full Background) -->
+    <div id="canvasContainer"></div>
+
+    <!-- Main Interface Overlay -->
+    <div class="interface-overlay">
         <!-- Header -->
-        <header>
-            <h1>🎵 Music Visualizer</h1>
+        <header class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="2" y="8" width="4" height="16" rx="2" fill="url(#gradient1)"/>
+                    <rect x="8" y="4" width="4" height="24" rx="2" fill="url(#gradient1)"/>
+                    <rect x="14" y="10" width="4" height="12" rx="2" fill="url(#gradient1)"/>
+                    <rect x="20" y="6" width="4" height="20" rx="2" fill="url(#gradient1)"/>
+                    <rect x="26" y="12" width="4" height="8" rx="2" fill="url(#gradient1)"/>
+                    <defs>
+                        <linearGradient id="gradient1" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#00d4ff"/>
+                            <stop offset="100%" stop-color="#7b2ff7"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Music Visualizer</span>
+            </div>
         </header>
 
-        <!-- Controls Panel -->
-        <div class="controls-panel">
-            <!-- Text Input -->
-            <div class="control-group">
-                <label for="textInput">Display Text:</label>
-                <input type="text" id="textInput" value="NateFTBL" maxlength="20">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <!-- Text Input Card -->
+            <div class="card">
+                <label class="input-label">Display Text</label>
+                <input type="text" id="textInput" class="text-input" value="NateFTBL" maxlength="20" placeholder="Enter text...">
             </div>
 
-            <!-- Audio Source Selector -->
-            <div class="control-group">
-                <label for="audioSource">Audio Source:</label>
-                <select id="audioSource">
-                    <option value="microphone">Microphone</option>
-                    <option value="tab">Browser Tab</option>
-                    <option value="file">Upload File</option>
+            <!-- Audio Source Card -->
+            <div class="card">
+                <label class="input-label">Audio Source</label>
+                <select id="audioSource" class="select-input">
+                    <option value="microphone">🎤 Microphone</option>
+                    <option value="tab">🖥️ Browser Tab</option>
+                    <option value="file">📁 Upload File</option>
                 </select>
                 <input type="file" id="fileInput" accept="audio/*" style="display: none;">
             </div>
 
-            <!-- Visualizer Mode -->
-            <div class="control-group">
-                <label>Visualizer Mode:</label>
-                <div class="button-group">
-                    <button class="mode-btn active" data-mode="spectrum">Spectrum Bars</button>
-                    <button class="mode-btn" data-mode="particles">Particles</button>
-                    <button class="mode-btn" data-mode="colorshift">Color Shift</button>
+            <!-- Visualizer Mode Card -->
+            <div class="card mode-card">
+                <label class="input-label">Visualizer Mode</label>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="spectrum">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <rect x="1" y="8" width="3" height="10" rx="1.5"/>
+                            <rect x="6" y="4" width="3" height="14" rx="1.5"/>
+                            <rect x="11" y="10" width="3" height="8" rx="1.5"/>
+                            <rect x="16" y="6" width="3" height="12" rx="1.5"/>
+                        </svg>
+                        <span>Spectrum</span>
+                    </button>
+                    <button class="mode-btn" data-mode="particles">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <circle cx="10" cy="10" r="2"/>
+                            <circle cx="4" cy="6" r="1.5"/>
+                            <circle cx="16" cy="6" r="1.5"/>
+                            <circle cx="4" cy="14" r="1.5"/>
+                            <circle cx="16" cy="14" r="1.5"/>
+                            <circle cx="10" cy="3" r="1"/>
+                            <circle cx="10" cy="17" r="1"/>
+                            <circle cx="3" cy="10" r="1"/>
+                            <circle cx="17" cy="10" r="1"/>
+                        </svg>
+                        <span>Particles</span>
+                    </button>
+                    <button class="mode-btn" data-mode="colorshift">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 2L12 8H18L13 12L15 18L10 14L5 18L7 12L2 8H8L10 2Z"/>
+                        </svg>
+                        <span>Color Shift</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Sensitivity Slider -->
-            <div class="control-group">
-                <label for="sensitivity">Sensitivity:</label>
-                <input type="range" id="sensitivity" min="1" max="10" value="5" step="0.5">
-                <span id="sensitivityValue">5.0</span>
+            <!-- Sensitivity Slider Card -->
+            <div class="card">
+                <label class="input-label">
+                    Sensitivity
+                    <span class="sensitivity-value" id="sensitivityValue">5.0</span>
+                </label>
+                <input type="range" id="sensitivity" class="slider" min="1" max="10" value="5" step="0.5">
             </div>
 
-            <!-- Start/Stop Button -->
-            <div class="control-group">
-                <button id="startStopBtn" class="primary-btn">Start Visualizer</button>
-            </div>
+            <!-- Start Button -->
+            <button id="startStopBtn" class="start-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="btn-icon play-icon">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="btn-icon stop-icon" style="display: none;">
+                    <rect x="6" y="6" width="12" height="12" rx="2"/>
+                </svg>
+                <span class="btn-text">Start Visualizer</span>
+            </button>
 
             <!-- Status -->
-            <div class="status" id="status">
-                Ready to start
+            <div class="status-bar" id="status">
+                <span class="status-dot"></span>
+                <span class="status-text">Ready to start</span>
             </div>
         </div>
-
-        <!-- Canvas Container -->
-        <div id="canvasContainer"></div>
     </div>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
 
     <!-- App Scripts -->
     <script type="module" src="audioManager.js"></script>
