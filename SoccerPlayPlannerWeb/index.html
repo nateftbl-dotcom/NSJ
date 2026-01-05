@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soccer Play Planner - Web Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: -webkit-fill-available;
+        }
+
+        header {
+            background: #2a2a2a;
+            padding: 12px 16px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        #field-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #field {
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            touch-action: none;
+        }
+
+        .player {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+
+        .player:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .player.home {
+            background: #3b82f6;
+            border: 2px solid #fff;
+        }
+
+        .player.away {
+            background: #ef4444;
+            border: 2px solid #fff;
+        }
+
+        .player.selected {
+            border: 3px solid #fbbf24;
+            transform: scale(1.15);
+        }
+
+        .controls {
+            background: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
+            padding: 12px 16px;
+        }
+
+        .timeline {
+            background: #3a3a3a;
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #555;
+            transform: translateY(-50%);
+        }
+
+        .timeline-progress {
+            position: absolute;
+            left: 0;
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.1s linear;
+        }
+
+        .timeline-handle {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .timeline-handle:active {
+            cursor: grabbing;
+        }
+
+        .keyframe-marker {
+            position: absolute;
+            top: 50%;
+            width: 3px;
+            height: 30px;
+            background: #fbbf24;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .time-display {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-family: monospace;
+            color: #aaa;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background: #3a3a3a;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        button.danger {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        button.success {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .speed-control select {
+            background: #3a3a3a;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .formation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .formation-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .formation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .formation-item {
+            background: #3a3a3a;
+            border: 1px solid #555;
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .formation-item:hover {
+            background: #444;
+            border-color: #3b82f6;
+        }
+
+        .formation-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .info-banner {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 16px;
+            }
+
+            .action-buttons button {
+                font-size: 12px;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="info-banner">
+            Web Demo - Drag players, add keyframes, press play!
+        </div>
+
+        <header>
+            <h1>⚽ Soccer Play Planner</h1>
+            <div class="subtitle">Interactive Tactical Board</div>
+        </header>
+
+        <div id="field-container">
+            <canvas id="field"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="timeline" id="timeline">
+                <div class="time-display" id="time-display">00:00.00 / 10:00.00</div>
+                <div class="timeline-track">
+                    <div class="timeline-progress" id="timeline-progress"></div>
+                </div>
+                <div class="timeline-handle" id="timeline-handle"></div>
+            </div>
+
+            <div class="playback-controls">
+                <button id="btn-stop">⏹ Stop</button>
+                <button id="btn-play" class="primary">▶ Play</button>
+                <button id="btn-loop" style="opacity: 0.6;">🔁 Loop</button>
+                <div class="speed-control">
+                    <span style="font-size: 12px;">Speed:</span>
+                    <select id="speed-select">
+                        <option value="0.25">0.25x</option>
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>1x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2x</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="btn-add-keyframe" class="success">+ Add Keyframe</button>
+                <button id="btn-home-formation">🏠 Home Formation</button>
+                <button id="btn-away-formation">✈️ Away Formation</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="formation-modal" id="formation-modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">Select Formation</div>
+            <div class="formation-list" id="formation-list"></div>
+            <button style="width: 100%; margin-top: 16px;" onclick="closeFormationModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
