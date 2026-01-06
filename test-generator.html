@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Dub Techno Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            margin: 10px;
+            background: #0f0;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+        }
+        .display {
+            padding: 20px;
+            background: #111;
+            border: 2px solid #0f0;
+            margin: 20px 0;
+            font-size: 24px;
+            text-align: center;
+        }
+        .log {
+            background: #111;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #0f0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 DUB TECHNO GENERATOR TEST</h1>
+
+    <div class="log" id="log">Starting...</div>
+
+    <button id="testBtn">1. TEST BUTTON CLICK</button>
+    <button id="generateBtn">2. GENERATE CHORD</button>
+    <button id="playBtn" disabled>3. PLAY SOUND</button>
+    <button id="stopBtn" disabled>4. STOP</button>
+
+    <div class="display" id="display">-</div>
+
+    <div id="instructions" style="margin-top: 30px; padding: 15px; background: #111; border: 1px solid #0f0;">
+        <strong>INSTRUCTIONS:</strong><br>
+        1. Click "TEST BUTTON CLICK" - should see log message<br>
+        2. Click "GENERATE CHORD" - should see chord name appear<br>
+        3. Click "PLAY SOUND" - should hear deep chord tone<br>
+        4. If nothing happens, check browser console (F12)<br><br>
+        <strong>Look at the log messages below to see what's working.</strong>
+    </div>
+
+    <script>
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<br>[${timestamp}] ${message}`;
+            console.log(message);
+        }
+
+        log('✓ Script loaded');
+
+        class TestGenerator {
+            constructor() {
+                log('✓ Constructor called');
+                this.audioContext = null;
+                this.currentChord = [];
+                this.isPlaying = false;
+                this.oscillators = [];
+                this.gainNodes = [];
+
+                try {
+                    this.initAudio();
+                    this.setupButtons();
+                    log('✓ Generator initialized successfully');
+                } catch (error) {
+                    log('✗ ERROR in constructor: ' + error.message);
+                }
+            }
+
+            initAudio() {
+                log('Initializing Web Audio API...');
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                log(`✓ AudioContext created (state: ${this.audioContext.state})`);
+
+                // Simple gain node
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 0.3;
+                this.masterGain.connect(this.audioContext.destination);
+                log('✓ Audio nodes connected');
+            }
+
+            setupButtons() {
+                log('Setting up button listeners...');
+
+                document.getElementById('testBtn').addEventListener('click', () => {
+                    log('✓ TEST BUTTON CLICKED - Buttons are working!');
+                    alert('Buttons work! Now try Generate.');
+                });
+
+                document.getElementById('generateBtn').addEventListener('click', async () => {
+                    log('Generate button clicked...');
+                    await this.resumeAudio();
+                    this.generate();
+                });
+
+                document.getElementById('playBtn').addEventListener('click', async () => {
+                    log('Play button clicked...');
+                    await this.resumeAudio();
+                    this.play();
+                });
+
+                document.getElementById('stopBtn').addEventListener('click', () => {
+                    log('Stop button clicked...');
+                    this.stop();
+                });
+
+                log('✓ Button listeners attached');
+            }
+
+            async resumeAudio() {
+                if (this.audioContext.state === 'suspended') {
+                    log('Resuming audio context...');
+                    await this.audioContext.resume();
+                    log(`✓ Audio resumed (state: ${this.audioContext.state})`);
+                }
+            }
+
+            generate() {
+                log('Generating chord...');
+
+                try {
+                    // Simple chord generation
+                    const roots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+                    const types = ['min7', 'maj7', 'sus4'];
+
+                    const root = roots[Math.floor(Math.random() * roots.length)];
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    const chordName = root + type;
+
+                    // Generate frequencies (C2 = 65.41 Hz as base)
+                    const baseFreq = 65.41 * Math.pow(2, roots.indexOf(root) / 12);
+                    this.currentChord = [
+                        baseFreq,
+                        baseFreq * Math.pow(2, 3/12),  // minor 3rd
+                        baseFreq * Math.pow(2, 7/12),  // perfect 5th
+                        baseFreq * Math.pow(2, 10/12)  // minor 7th
+                    ];
+
+                    document.getElementById('display').textContent = chordName;
+                    log(`✓ Generated: ${chordName} (${this.currentChord.length} notes)`);
+                    log(`  Frequencies: ${this.currentChord.map(f => f.toFixed(2)).join(', ')} Hz`);
+
+                    document.getElementById('playBtn').disabled = false;
+                    log('✓ Play button enabled');
+
+                } catch (error) {
+                    log('✗ ERROR generating chord: ' + error.message);
+                }
+            }
+
+            play() {
+                log('Playing chord...');
+
+                try {
+                    if (!this.currentChord || this.currentChord.length === 0) {
+                        log('✗ No chord to play - generate one first');
+                        alert('Generate a chord first!');
+                        return;
+                    }
+
+                    const now = this.audioContext.currentTime;
+                    this.oscillators = [];
+                    this.gainNodes = [];
+
+                    log(`Creating ${this.currentChord.length} oscillators...`);
+
+                    this.currentChord.forEach((freq, i) => {
+                        const osc = this.audioContext.createOscillator();
+                        const gain = this.audioContext.createGain();
+
+                        osc.type = 'sawtooth';
+                        osc.frequency.value = freq;
+
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
+
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+
+                        osc.start(now);
+
+                        this.oscillators.push(osc);
+                        this.gainNodes.push(gain);
+
+                        log(`  Osc ${i+1}: ${freq.toFixed(2)} Hz`);
+                    });
+
+                    this.isPlaying = true;
+                    log(`✓ ${this.oscillators.length} oscillators started - YOU SHOULD HEAR SOUND NOW`);
+
+                    document.getElementById('playBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+
+                } catch (error) {
+                    log('✗ ERROR playing: ' + error.message);
+                }
+            }
+
+            stop() {
+                if (!this.isPlaying) {
+                    log('Nothing playing');
+                    return;
+                }
+
+                log('Stopping...');
+
+                const now = this.audioContext.currentTime;
+
+                this.gainNodes.forEach(gain => {
+                    gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                });
+
+                setTimeout(() => {
+                    this.oscillators.forEach(osc => {
+                        osc.stop();
+                        osc.disconnect();
+                    });
+                    this.oscillators = [];
+                    this.gainNodes = [];
+                    this.isPlaying = false;
+
+                    document.getElementById('playBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+
+                    log('✓ Stopped');
+                }, 600);
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            log('Page loaded, creating generator...');
+            try {
+                const generator = new TestGenerator();
+                log('✓ ALL SYSTEMS GO - Try the buttons!');
+            } catch (error) {
+                log('✗ FATAL ERROR: ' + error.message);
+                alert('Error: ' + error.message + '\nCheck console (F12)');
+            }
+        });
+
+        // Catch any errors
+        window.addEventListener('error', (e) => {
+            log('✗ JAVASCRIPT ERROR: ' + e.message);
+        });
+    </script>
+</body>
+</html>
