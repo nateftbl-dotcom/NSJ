@@ -244,7 +244,8 @@
         </div>
 
         <div class="button-container">
-            <button id="generateBtn">GENERATE CHORD</button>
+            <button id="generateBtn">GENERATE NEW CHORD</button>
+            <button id="playBtn" disabled>PLAY CHORD</button>
             <button id="stopBtn" disabled>STOP</button>
         </div>
 
@@ -361,11 +362,13 @@
         </div>
 
         <div class="info">
-            <strong>DUB TECHNO SOUND DESIGN</strong><br>
-            This generator creates deep, atmospheric chords perfect for dub techno.<br>
-            Experiment with low-pass filtering, delay feedback, and chord voicings to craft your sound.<br><br>
-            <strong>Mobile Users:</strong> Tap "Generate Chord" to start. Each tap creates a new random chord.<br>
-            Watch the chord display pulse when playing. Adjust controls in real-time.
+            <strong>HOW TO USE</strong><br>
+            1. Click <strong>GENERATE NEW CHORD</strong> to create a random chord<br>
+            2. Click <strong>PLAY CHORD</strong> to hear it<br>
+            3. Adjust controls in real-time while playing<br>
+            4. Click <strong>STOP</strong> to end playback<br>
+            5. Generate different chords until you find one you like<br><br>
+            <strong>Tip:</strong> Watch the chord display pulse when playing. Try different waveforms, filters, and effects!
         </div>
     </div>
 
@@ -452,10 +455,21 @@
             }
 
             setupEffectsChain() {
-                // Delay chain
+                // Create a source node that oscillators will connect to
+                this.sourceGain = this.audioContext.createGain();
+                this.sourceGain.gain.value = 1.0;
+
+                // Connect source through filter
+                this.sourceGain.connect(this.filter);
+
+                // Delay chain with feedback
                 this.delay.connect(this.delayFeedback);
                 this.delayFeedback.connect(this.delay);
                 this.delay.connect(this.delayMixGain);
+
+                // Connect filter output to delay and dry paths
+                this.filter.connect(this.delay);
+                this.filter.connect(this.dryGain);
 
                 // Main mixer for delay
                 this.delayMixer = this.audioContext.createGain();
@@ -496,9 +510,16 @@
             }
 
             setupEventListeners() {
-                // Generate button
-                document.getElementById('generateBtn').addEventListener('click', () => {
-                    this.generateAndPlay();
+                // Generate button - creates new chord but doesn't play
+                document.getElementById('generateBtn').addEventListener('click', async () => {
+                    await this.resumeAudioContext();
+                    this.generate();
+                });
+
+                // Play button - plays the current chord
+                document.getElementById('playBtn').addEventListener('click', async () => {
+                    await this.resumeAudioContext();
+                    this.play();
                 });
 
                 // Stop button
@@ -626,106 +647,116 @@
                 return a4 * Math.pow(2, (octave - 4) + semitone / 12);
             }
 
-            async generateAndPlay() {
+            generate() {
                 try {
-                    // Resume audio context for iOS
-                    await this.resumeAudioContext();
+                    this.showStatus('Generating new chord...');
 
-                    if (this.isPlaying) {
-                        await this.stopImmediate();
-                        // Small delay before generating new chord
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-
-                    this.showStatus('Generating chord...');
-
+                    // Generate new chord frequencies
                     this.currentChord = this.generateChord();
-                    this.playChord(this.currentChord);
 
                     const chordName = document.getElementById('chordDisplay').textContent;
-                    this.showStatus(`Playing: ${chordName}`);
+                    this.showStatus(`Generated: ${chordName} - Click PLAY to hear it`);
 
-                    // Add visual feedback
-                    document.getElementById('chordDisplayContainer').classList.add('playing');
-
-                    document.getElementById('generateBtn').disabled = true;
-                    document.getElementById('stopBtn').disabled = false;
+                    // Enable play button
+                    document.getElementById('playBtn').disabled = false;
                 } catch (error) {
                     console.error('Error generating chord:', error);
                     this.showStatus('Error: ' + error.message);
                 }
             }
 
-            stopImmediate() {
-                return new Promise((resolve) => {
-                    if (!this.isPlaying) {
-                        resolve();
+            play() {
+                try {
+                    // Stop any currently playing sound
+                    if (this.isPlaying) {
+                        this.stopImmediate();
+                    }
+
+                    // Check if we have a chord to play
+                    if (!this.currentChord || this.currentChord.length === 0) {
+                        this.showStatus('Please generate a chord first!');
                         return;
                     }
 
+                    const chordName = document.getElementById('chordDisplay').textContent;
+                    this.showStatus(`Playing: ${chordName}`);
+
                     const now = this.audioContext.currentTime;
-                    this.gainNodes.forEach(gain => {
-                        gain.gain.cancelScheduledValues(now);
-                        gain.gain.setValueAtTime(gain.gain.value, now);
-                        gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                    const attack = parseFloat(this.controls.attack.value);
+                    const waveform = this.controls.waveform.value;
+                    const detuneAmount = parseFloat(this.controls.detune.value);
+
+                    this.oscillators = [];
+                    this.gainNodes = [];
+
+                    // Create oscillators for each frequency in the chord
+                    this.currentChord.forEach((freq) => {
+                        // Create 3 oscillators per note for thickness/chorus
+                        for (let i = 0; i < 3; i++) {
+                            const osc = this.audioContext.createOscillator();
+                            const gain = this.audioContext.createGain();
+
+                            osc.type = waveform;
+                            osc.frequency.value = freq;
+
+                            // Detune for chorus effect
+                            if (i === 1) osc.detune.value = detuneAmount;
+                            if (i === 2) osc.detune.value = -detuneAmount;
+
+                            // Individual voice gain with envelope
+                            const voiceGain = 0.08 / this.currentChord.length;
+                            gain.gain.setValueAtTime(0, now);
+                            gain.gain.linearRampToValueAtTime(voiceGain, now + attack);
+
+                            // Connect: oscillator -> gain -> sourceGain (which is connected to effects)
+                            osc.connect(gain);
+                            gain.connect(this.sourceGain);
+
+                            this.oscillators.push(osc);
+                            this.gainNodes.push(gain);
+                        }
                     });
 
-                    setTimeout(() => {
-                        this.oscillators.forEach(osc => {
-                            osc.stop();
-                            osc.disconnect();
-                        });
-                        this.oscillators = [];
-                        this.gainNodes = [];
-                        this.isPlaying = false;
-                        resolve();
-                    }, 150);
-                });
+                    // Start all oscillators
+                    this.oscillators.forEach(osc => osc.start(now));
+
+                    this.isPlaying = true;
+
+                    // Update UI
+                    document.getElementById('chordDisplayContainer').classList.add('playing');
+                    document.getElementById('playBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+
+                } catch (error) {
+                    console.error('Error playing chord:', error);
+                    this.showStatus('Error: ' + error.message);
+                }
             }
 
-            playChord(frequencies) {
+            stopImmediate() {
+                if (!this.isPlaying) return;
+
                 const now = this.audioContext.currentTime;
-                const attack = parseFloat(this.controls.attack.value);
-                const waveform = this.controls.waveform.value;
-                const detuneAmount = parseFloat(this.controls.detune.value);
 
-                this.oscillators = [];
-                this.gainNodes = [];
-
-                frequencies.forEach((freq, index) => {
-                    // Create multiple oscillators per note for thickness
-                    for (let i = 0; i < 3; i++) {
-                        const osc = this.audioContext.createOscillator();
-                        const gain = this.audioContext.createGain();
-
-                        osc.type = waveform;
-                        osc.frequency.value = freq;
-
-                        // Detune for chorus effect
-                        if (i === 1) osc.detune.value = detuneAmount;
-                        if (i === 2) osc.detune.value = -detuneAmount;
-
-                        // Individual voice gain
-                        gain.gain.setValueAtTime(0, now);
-                        gain.gain.linearRampToValueAtTime(0.08 / frequencies.length, now + attack);
-
-                        // Connect through filter
-                        osc.connect(gain);
-                        gain.connect(this.filter);
-
-                        this.oscillators.push(osc);
-                        this.gainNodes.push(gain);
-                    }
+                this.gainNodes.forEach(gain => {
+                    gain.gain.cancelScheduledValues(now);
+                    gain.gain.setValueAtTime(gain.gain.value, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.05);
                 });
 
-                // Connect filter to effects chain
-                this.filter.connect(this.delay);
-                this.filter.connect(this.dryGain);
-
-                // Start all oscillators
-                this.oscillators.forEach(osc => osc.start(now));
-
-                this.isPlaying = true;
+                setTimeout(() => {
+                    this.oscillators.forEach(osc => {
+                        try {
+                            osc.stop();
+                            osc.disconnect();
+                        } catch (e) {
+                            // Oscillator may already be stopped
+                        }
+                    });
+                    this.oscillators = [];
+                    this.gainNodes = [];
+                    this.isPlaying = false;
+                }, 100);
             }
 
             updateOscillatorType() {
@@ -767,8 +798,12 @@
 
                 setTimeout(() => {
                     this.oscillators.forEach(osc => {
-                        osc.stop();
-                        osc.disconnect();
+                        try {
+                            osc.stop();
+                            osc.disconnect();
+                        } catch (e) {
+                            // Oscillator may already be stopped
+                        }
                     });
                     this.oscillators = [];
                     this.gainNodes = [];
@@ -777,10 +812,17 @@
                     // Remove visual feedback
                     document.getElementById('chordDisplayContainer').classList.remove('playing');
 
-                    document.getElementById('generateBtn').disabled = false;
+                    // Update buttons
+                    const hasChord = this.currentChord && this.currentChord.length > 0;
+                    document.getElementById('playBtn').disabled = !hasChord;
                     document.getElementById('stopBtn').disabled = true;
 
-                    this.showStatus('Stopped - Ready for next chord');
+                    const chordName = document.getElementById('chordDisplay').textContent;
+                    if (hasChord) {
+                        this.showStatus(`Stopped - Current chord: ${chordName}`);
+                    } else {
+                        this.showStatus('Stopped - Generate a new chord');
+                    }
                 }, release * 1000 + 100);
             }
         }
