@@ -160,6 +160,18 @@
             box-shadow: none;
         }
 
+        .randomize-btn {
+            padding: 8px 15px;
+            font-size: 0.85em;
+            margin-top: 10px;
+            width: 100%;
+            background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+        }
+
+        .randomize-btn:hover {
+            background: linear-gradient(135deg, #ffaa00 0%, #dd7700 100%);
+        }
+
         .info {
             text-align: center;
             margin-top: 20px;
@@ -265,22 +277,23 @@
                 </div>
                 <div class="control">
                     <label>
-                        Detune <span class="value-display" id="detuneValue">15</span>
-                        <input type="range" id="detune" min="0" max="50" value="15" step="1">
+                        Detune <span class="value-display" id="detuneValue">20</span>
+                        <input type="range" id="detune" min="0" max="50" value="20" step="1">
                     </label>
                 </div>
                 <div class="control">
                     <label>
-                        Attack <span class="value-display" id="attackValue">0.1s</span>
-                        <input type="range" id="attack" min="0.01" max="2" value="0.1" step="0.01">
+                        Attack <span class="value-display" id="attackValue">0.01s</span>
+                        <input type="range" id="attack" min="0.001" max="0.5" value="0.01" step="0.001">
                     </label>
                 </div>
                 <div class="control">
                     <label>
-                        Release <span class="value-display" id="releaseValue">2.0s</span>
-                        <input type="range" id="release" min="0.1" max="5" value="2.0" step="0.1">
+                        Decay <span class="value-display" id="decayValue">1.5s</span>
+                        <input type="range" id="decay" min="0.5" max="5" value="1.5" step="0.1">
                     </label>
                 </div>
+                <button class="randomize-btn" id="randomizeSynth">🎲 RANDOMIZE SYNTHESIS</button>
             </div>
 
             <div class="control-group">
@@ -297,16 +310,29 @@
                 </div>
                 <div class="control">
                     <label>
-                        Cutoff <span class="value-display" id="cutoffValue">800Hz</span>
-                        <input type="range" id="cutoff" min="100" max="8000" value="800" step="50">
+                        Start Cutoff <span class="value-display" id="cutoffValue">3000Hz</span>
+                        <input type="range" id="cutoff" min="200" max="8000" value="3000" step="50">
                     </label>
                 </div>
                 <div class="control">
                     <label>
-                        Resonance <span class="value-display" id="resonanceValue">5</span>
-                        <input type="range" id="resonance" min="0" max="30" value="5" step="0.5">
+                        End Cutoff <span class="value-display" id="endCutoffValue">400Hz</span>
+                        <input type="range" id="endCutoff" min="100" max="8000" value="400" step="50">
                     </label>
                 </div>
+                <div class="control">
+                    <label>
+                        Resonance <span class="value-display" id="resonanceValue">8</span>
+                        <input type="range" id="resonance" min="0" max="30" value="8" step="0.5">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Filter Sweep <span class="value-display" id="filterSweepValue">0.8s</span>
+                        <input type="range" id="filterSweep" min="0.1" max="3" value="0.8" step="0.1">
+                    </label>
+                </div>
+                <button class="randomize-btn" id="randomizeFilter">🎲 RANDOMIZE FILTER</button>
             </div>
 
             <div class="control-group">
@@ -314,29 +340,30 @@
                 <div class="control">
                     <label>
                         Delay Time <span class="value-display" id="delayTimeValue">0.375s</span>
-                        <input type="range" id="delayTime" min="0.1" max="2" value="0.375" step="0.025">
+                        <input type="range" id="delayTime" min="0.05" max="2" value="0.375" step="0.025">
                     </label>
                 </div>
                 <div class="control">
                     <label>
-                        Feedback <span class="value-display" id="feedbackValue">0.4</span>
-                        <input type="range" id="feedback" min="0" max="0.8" value="0.4" step="0.05">
+                        Feedback <span class="value-display" id="feedbackValue">0.55</span>
+                        <input type="range" id="feedback" min="0" max="0.85" value="0.55" step="0.05">
                     </label>
                 </div>
                 <div class="control">
                     <label>
-                        Delay Mix <span class="value-display" id="delayMixValue">0.3</span>
-                        <input type="range" id="delayMix" min="0" max="1" value="0.3" step="0.05">
+                        Delay Mix <span class="value-display" id="delayMixValue">0.45</span>
+                        <input type="range" id="delayMix" min="0" max="1" value="0.45" step="0.05">
                     </label>
                 </div>
+                <button class="randomize-btn" id="randomizeDelay">🎲 RANDOMIZE DELAY</button>
             </div>
 
             <div class="control-group">
                 <h3>REVERB & TONE</h3>
                 <div class="control">
                     <label>
-                        Reverb Mix <span class="value-display" id="reverbMixValue">0.35</span>
-                        <input type="range" id="reverbMix" min="0" max="1" value="0.35" step="0.05">
+                        Reverb Mix <span class="value-display" id="reverbMixValue">0.5</span>
+                        <input type="range" id="reverbMix" min="0" max="1" value="0.5" step="0.05">
                     </label>
                 </div>
                 <div class="control">
@@ -354,21 +381,22 @@
                 </div>
                 <div class="control">
                     <label>
-                        Volume <span class="value-display" id="volumeValue">0.15</span>
-                        <input type="range" id="volume" min="0" max="0.5" value="0.15" step="0.01">
+                        Volume <span class="value-display" id="volumeValue">0.6</span>
+                        <input type="range" id="volume" min="0" max="1.0" value="0.6" step="0.05">
                     </label>
                 </div>
+                <button class="randomize-btn" id="randomizeReverb">🎲 RANDOMIZE REVERB</button>
             </div>
         </div>
 
         <div class="info">
             <strong>HOW TO USE</strong><br>
-            1. Click <strong>GENERATE NEW CHORD</strong> to create a random chord<br>
-            2. Click <strong>PLAY CHORD</strong> to hear it<br>
-            3. Adjust controls in real-time while playing<br>
-            4. Click <strong>STOP</strong> to end playback<br>
-            5. Generate different chords until you find one you like<br><br>
-            <strong>Tip:</strong> Watch the chord display pulse when playing. Try different waveforms, filters, and effects!
+            1. Click <strong>GENERATE NEW CHORD</strong> to randomize chord notes<br>
+            2. Click <strong>PLAY CHORD</strong> to trigger an impulse (one-shot hit with decay/reverb/delay trails)<br>
+            3. Use <strong>🎲 RANDOMIZE</strong> buttons to experiment with random settings per category<br>
+            4. Tweak individual controls to dial in your sound<br>
+            5. Play repeatedly to hear how effects interact with different settings<br><br>
+            <strong>Dub Techno Sound:</strong> Filter sweeps from high to low, long reverb/delay trails, percussive impulses
         </div>
     </div>
 
@@ -402,38 +430,38 @@
             initAudioContext() {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-                // Master gain
+                // Master gain - MUCH LOUDER for professional output
                 this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.value = 0.15;
+                this.masterGain.gain.value = 0.6;
 
-                // Filter
+                // Filter - starts high, sweeps low for dub techno
                 this.filter = this.audioContext.createBiquadFilter();
                 this.filter.type = 'lowpass';
-                this.filter.frequency.value = 800;
-                this.filter.Q.value = 5;
+                this.filter.frequency.value = 3000;
+                this.filter.Q.value = 8;
 
                 // Delay
                 this.delay = this.audioContext.createDelay(5.0);
                 this.delay.delayTime.value = 0.375;
 
                 this.delayFeedback = this.audioContext.createGain();
-                this.delayFeedback.gain.value = 0.4;
+                this.delayFeedback.gain.value = 0.55;
 
                 this.delayMixGain = this.audioContext.createGain();
-                this.delayMixGain.gain.value = 0.3;
+                this.delayMixGain.gain.value = 0.45;
 
                 this.dryGain = this.audioContext.createGain();
-                this.dryGain.gain.value = 0.7;
+                this.dryGain.gain.value = 0.55;
 
-                // Reverb (convolver)
+                // Reverb (convolver) - longer for dub techno
                 this.reverb = this.audioContext.createConvolver();
                 this.createReverbImpulse();
 
                 this.reverbMixGain = this.audioContext.createGain();
-                this.reverbMixGain.gain.value = 0.35;
+                this.reverbMixGain.gain.value = 0.5;
 
                 this.reverbDryGain = this.audioContext.createGain();
-                this.reverbDryGain.gain.value = 0.65;
+                this.reverbDryGain.gain.value = 0.5;
 
                 // Connect effects chain
                 this.setupEffectsChain();
@@ -496,9 +524,11 @@
                     waveform: document.getElementById('waveform'),
                     detune: document.getElementById('detune'),
                     attack: document.getElementById('attack'),
-                    release: document.getElementById('release'),
+                    decay: document.getElementById('decay'),
                     filterType: document.getElementById('filterType'),
                     cutoff: document.getElementById('cutoff'),
+                    endCutoff: document.getElementById('endCutoff'),
+                    filterSweep: document.getElementById('filterSweep'),
                     resonance: document.getElementById('resonance'),
                     delayTime: document.getElementById('delayTime'),
                     feedback: document.getElementById('feedback'),
@@ -516,16 +546,22 @@
                     this.generate();
                 });
 
-                // Play button - plays the current chord
+                // Play button - plays the current chord as IMPULSE (one-shot)
                 document.getElementById('playBtn').addEventListener('click', async () => {
                     await this.resumeAudioContext();
                     this.play();
                 });
 
-                // Stop button
+                // Stop button - stops sustained sounds (not needed for impulses but kept for compatibility)
                 document.getElementById('stopBtn').addEventListener('click', () => {
                     this.stop();
                 });
+
+                // Randomize buttons
+                document.getElementById('randomizeSynth').addEventListener('click', () => this.randomizeSynthesis());
+                document.getElementById('randomizeFilter').addEventListener('click', () => this.randomizeFilter());
+                document.getElementById('randomizeDelay').addEventListener('click', () => this.randomizeDelay());
+                document.getElementById('randomizeReverb').addEventListener('click', () => this.randomizeReverb());
 
                 // Control updates
                 this.controls.waveform.addEventListener('change', () => this.updateOscillatorType());
@@ -583,8 +619,16 @@
                     document.getElementById('attackValue').textContent = e.target.value + 's';
                 });
 
-                this.controls.release.addEventListener('input', (e) => {
-                    document.getElementById('releaseValue').textContent = e.target.value + 's';
+                this.controls.decay.addEventListener('input', (e) => {
+                    document.getElementById('decayValue').textContent = e.target.value + 's';
+                });
+
+                this.controls.endCutoff.addEventListener('input', (e) => {
+                    document.getElementById('endCutoffValue').textContent = e.target.value + 'Hz';
+                });
+
+                this.controls.filterSweep.addEventListener('input', (e) => {
+                    document.getElementById('filterSweepValue').textContent = e.target.value + 's';
                 });
             }
 
@@ -667,11 +711,6 @@
 
             play() {
                 try {
-                    // Stop any currently playing sound
-                    if (this.isPlaying) {
-                        this.stopImmediate();
-                    }
-
                     // Check if we have a chord to play
                     if (!this.currentChord || this.currentChord.length === 0) {
                         this.showStatus('Please generate a chord first!');
@@ -679,15 +718,25 @@
                     }
 
                     const chordName = document.getElementById('chordDisplay').textContent;
-                    this.showStatus(`Playing: ${chordName}`);
+                    this.showStatus(`▶ ${chordName} IMPULSE`);
 
                     const now = this.audioContext.currentTime;
                     const attack = parseFloat(this.controls.attack.value);
+                    const decay = parseFloat(this.controls.decay.value);
                     const waveform = this.controls.waveform.value;
                     const detuneAmount = parseFloat(this.controls.detune.value);
 
-                    this.oscillators = [];
-                    this.gainNodes = [];
+                    // Filter envelope parameters
+                    const startCutoff = parseFloat(this.controls.cutoff.value);
+                    const endCutoff = parseFloat(this.controls.endCutoff.value);
+                    const filterSweepTime = parseFloat(this.controls.filterSweep.value);
+
+                    // IMPULSE MODE: Create oscillators that will auto-stop after decay
+                    const oscillators = [];
+                    const gainNodes = [];
+
+                    // Total duration of the sound
+                    const totalDuration = attack + decay;
 
                     // Create oscillators for each frequency in the chord
                     this.currentChord.forEach((freq) => {
@@ -703,29 +752,45 @@
                             if (i === 1) osc.detune.value = detuneAmount;
                             if (i === 2) osc.detune.value = -detuneAmount;
 
-                            // Individual voice gain with envelope
-                            const voiceGain = 0.08 / this.currentChord.length;
+                            // IMPULSE ENVELOPE: Quick attack, exponential decay
+                            const peakGain = 0.25 / this.currentChord.length; // Much louder
                             gain.gain.setValueAtTime(0, now);
-                            gain.gain.linearRampToValueAtTime(voiceGain, now + attack);
+                            gain.gain.linearRampToValueAtTime(peakGain, now + attack);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + attack + decay);
 
                             // Connect: oscillator -> gain -> sourceGain (which is connected to effects)
                             osc.connect(gain);
                             gain.connect(this.sourceGain);
 
-                            this.oscillators.push(osc);
-                            this.gainNodes.push(gain);
+                            oscillators.push(osc);
+                            gainNodes.push(gain);
                         }
                     });
 
-                    // Start all oscillators
-                    this.oscillators.forEach(osc => osc.start(now));
+                    // FILTER ENVELOPE SWEEP (classic dub techno sound)
+                    this.filter.frequency.cancelScheduledValues(now);
+                    this.filter.frequency.setValueAtTime(startCutoff, now);
+                    this.filter.frequency.exponentialRampToValueAtTime(
+                        Math.max(endCutoff, 20), // Prevent 0 Hz
+                        now + filterSweepTime
+                    );
 
-                    this.isPlaying = true;
+                    // Start all oscillators NOW and schedule stop
+                    oscillators.forEach(osc => {
+                        osc.start(now);
+                        osc.stop(now + totalDuration + 0.1); // Stop after envelope completes
+                    });
 
-                    // Update UI
+                    // Visual feedback (brief pulse)
                     document.getElementById('chordDisplayContainer').classList.add('playing');
-                    document.getElementById('playBtn').disabled = true;
-                    document.getElementById('stopBtn').disabled = false;
+                    setTimeout(() => {
+                        document.getElementById('chordDisplayContainer').classList.remove('playing');
+                    }, (attack + decay) * 200); // Visual pulse during main sound
+
+                    // Status update
+                    setTimeout(() => {
+                        this.showStatus(`Generated: ${chordName} - Click PLAY to hear it`);
+                    }, totalDuration * 1000);
 
                 } catch (error) {
                     console.error('Error playing chord:', error);
@@ -824,6 +889,85 @@
                         this.showStatus('Stopped - Generate a new chord');
                     }
                 }, release * 1000 + 100);
+            }
+
+            // RANDOMIZE FUNCTIONS
+            randomizeSynthesis() {
+                const waveforms = ['sine', 'triangle', 'sawtooth', 'square'];
+                this.controls.waveform.value = waveforms[Math.floor(Math.random() * waveforms.length)];
+
+                const detune = Math.floor(Math.random() * 40) + 5; // 5-45
+                this.controls.detune.value = detune;
+                document.getElementById('detuneValue').textContent = detune;
+
+                const attack = (Math.random() * 0.05 + 0.001).toFixed(3); // 0.001-0.05s
+                this.controls.attack.value = attack;
+                document.getElementById('attackValue').textContent = attack + 's';
+
+                const decay = (Math.random() * 3 + 0.8).toFixed(1); // 0.8-3.8s
+                this.controls.decay.value = decay;
+                document.getElementById('decayValue').textContent = decay + 's';
+
+                this.showStatus('🎲 Synthesis randomized!');
+            }
+
+            randomizeFilter() {
+                const filterTypes = ['lowpass', 'highpass', 'bandpass'];
+                this.controls.filterType.value = filterTypes[Math.floor(Math.random() * filterTypes.length)];
+                this.filter.type = this.controls.filterType.value;
+
+                const startCutoff = Math.floor(Math.random() * 5000) + 1000; // 1000-6000 Hz
+                this.controls.cutoff.value = startCutoff;
+                document.getElementById('cutoffValue').textContent = startCutoff + 'Hz';
+
+                const endCutoff = Math.floor(Math.random() * 800) + 200; // 200-1000 Hz
+                this.controls.endCutoff.value = endCutoff;
+                document.getElementById('endCutoffValue').textContent = endCutoff + 'Hz';
+
+                const resonance = (Math.random() * 20 + 3).toFixed(1); // 3-23
+                this.controls.resonance.value = resonance;
+                document.getElementById('resonanceValue').textContent = resonance;
+                this.filter.Q.value = parseFloat(resonance);
+
+                const sweep = (Math.random() * 2 + 0.3).toFixed(1); // 0.3-2.3s
+                this.controls.filterSweep.value = sweep;
+                document.getElementById('filterSweepValue').textContent = sweep + 's';
+
+                this.showStatus('🎲 Filter randomized!');
+            }
+
+            randomizeDelay() {
+                const delayTime = (Math.random() * 1.5 + 0.1).toFixed(3); // 0.1-1.6s
+                this.controls.delayTime.value = delayTime;
+                document.getElementById('delayTimeValue').textContent = delayTime + 's';
+                this.delay.delayTime.value = parseFloat(delayTime);
+
+                const feedback = (Math.random() * 0.6 + 0.2).toFixed(2); // 0.2-0.8
+                this.controls.feedback.value = feedback;
+                document.getElementById('feedbackValue').textContent = feedback;
+                this.delayFeedback.gain.value = parseFloat(feedback);
+
+                const mix = (Math.random() * 0.6 + 0.2).toFixed(2); // 0.2-0.8
+                this.controls.delayMix.value = mix;
+                document.getElementById('delayMixValue').textContent = mix;
+                this.delayMixGain.gain.value = parseFloat(mix);
+                this.dryGain.gain.value = 1 - parseFloat(mix);
+
+                this.showStatus('🎲 Delay randomized!');
+            }
+
+            randomizeReverb() {
+                const reverbMix = (Math.random() * 0.6 + 0.2).toFixed(2); // 0.2-0.8
+                this.controls.reverbMix.value = reverbMix;
+                document.getElementById('reverbMixValue').textContent = reverbMix;
+                this.reverbMixGain.gain.value = parseFloat(reverbMix);
+                this.reverbDryGain.gain.value = 1 - parseFloat(reverbMix);
+
+                // Also randomize chord type
+                const chordTypes = ['minor7', 'minor9', 'sus2', 'sus4', 'major7', 'dom7'];
+                this.controls.chordType.value = chordTypes[Math.floor(Math.random() * chordTypes.length)];
+
+                this.showStatus('🎲 Reverb randomized! (Also randomized chord type)');
             }
         }
 
