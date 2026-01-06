@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dub Techno Sequencer PRO - Generative Edition</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    color: #00ff88;
+    min-height: 100vh;
+    padding: 20px;
+}
+.container {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #00ff88;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 1600px;
+    margin: 0 auto;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+}
+h1 { text-align: center; margin-bottom: 20px; font-size: 2em; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+.section { margin-bottom: 25px; padding: 20px; background: rgba(0, 255, 136, 0.05); border-radius: 10px; border: 1px solid rgba(0, 255, 136, 0.2); }
+.section h2 { margin-bottom: 15px; color: #00ffcc; font-size: 1.3em; }
+.sequencer-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 8px; margin: 20px 0; }
+.step {
+    aspect-ratio: 1; background: rgba(0, 255, 136, 0.1); border: 2px solid rgba(0, 255, 136, 0.3);
+    border-radius: 8px; cursor: pointer; transition: all 0.2s; position: relative;
+    display: flex; align-items: center; justify-content: center; font-size: 0.8em; color: #00ff88;
+}
+.step:hover { background: rgba(0, 255, 136, 0.2); transform: scale(1.05); }
+.step.active { background: #00ff88; color: #000; font-weight: bold; box-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
+.step.enabled { border-color: #00ff88; background: rgba(0, 255, 136, 0.3); }
+.step.selected { border-color: #ff8800; border-width: 3px; }
+@keyframes playPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); box-shadow: 0 0 20px rgba(0, 255, 136, 1); } }
+.step.playing { animation: playPulse 0.3s ease-out; }
+.transport { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin: 20px 0; }
+button {
+    padding: 12px 25px; font-size: 1em; font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%); color: #000;
+    border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 255, 136, 0.5); }
+button:active { transform: translateY(0); }
+button:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+button.stop { background: linear-gradient(135deg, #ff3333 0%, #cc0000 100%); }
+button.export { background: linear-gradient(135deg, #3388ff 0%, #0066cc 100%); }
+button.randomize-btn {
+    padding: 8px 15px; font-size: 0.85em;
+    background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+}
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.control-group { background: rgba(0, 255, 136, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.2); }
+.control-group h3 { margin-bottom: 15px; font-size: 1.1em; color: #00ffcc; }
+.control { margin-bottom: 12px; }
+label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #00ff88; }
+input[type="range"] {
+    width: 100%; height: 6px; background: rgba(0, 255, 136, 0.2); outline: none;
+    border-radius: 3px; -webkit-appearance: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; background: #00ff88;
+    cursor: pointer; border-radius: 50%; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; background: #00ff88; cursor: pointer;
+    border-radius: 50%; border: none; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+select, input[type="number"] {
+    width: 100%; padding: 8px; background: rgba(0, 0, 0, 0.5); color: #00ff88;
+    border: 1px solid #00ff88; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em;
+}
+.value-display { display: inline-block; float: right; color: #00ffcc; font-weight: bold; }
+.status {
+    text-align: center; padding: 15px; background: rgba(0, 255, 136, 0.1);
+    border-radius: 8px; margin: 15px 0; font-size: 1.1em; color: #00ffcc;
+}
+.chord-display {
+    text-align: center; padding: 15px; background: rgba(0, 255, 136, 0.15);
+    border-radius: 8px; font-size: 1.5em; color: #00ff88; font-weight: bold; margin: 10px 0;
+}
+.checkbox-container { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+.step-editor {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px; margin: 15px 0; padding: 15px; background: rgba(255, 136, 0, 0.1);
+    border-radius: 8px; border: 2px solid rgba(255, 136, 0, 0.3);
+}
+@media (max-width: 768px) {
+    .sequencer-grid { grid-template-columns: repeat(8, 1fr); }
+    .controls { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎹 DUB TECHNO SEQUENCER PRO - GENERATIVE EDITION</h1>
+
+<div class="status" id="status">Ready - Professional generative sequencer loaded</div>
+
+<div class="section">
+<h2>16-STEP SEQUENCER</h2>
+<div class="sequencer-grid" id="sequencerGrid"></div>
+
+<div class="transport">
+<button id="playSeqBtn">▶ PLAY</button>
+<button id="stopSeqBtn" class="stop" disabled>■ STOP</button>
+<label style="display: inline-flex; align-items: center; gap: 10px;">
+BPM: <input type="number" id="bpm" value="120" min="60" max="200" style="width: 80px;">
+</label>
+<label style="display: inline-flex; align-items: center; gap: 10px;">
+Swing: <input type="range" id="swing" min="0" max="75" value="0" style="width: 100px;"> <span id="swingValue">0%</span>
+</label>
+<label style="display: inline-flex; align-items: center; gap: 10px;">
+Humanize: <input type="range" id="humanize" min="0" max="50" value="0" style="width: 100px;"> <span id="humanizeValue">0ms</span>
+</label>
+<div class="checkbox-container">
+<input type="checkbox" id="kickEnabled" checked>
+<label for="kickEnabled">808 Kick</label>
+</div>
+</div>
+
+<div class="chord-display" id="stepChordDisplay">Step 1: Empty - Click to edit</div>
+
+<div class="step-editor">
+<div class="control">
+<button id="generateStepChord" style="width: 100%;">🎲 GENERATE CHORD</button>
+</div>
+<div class="control">
+<label>Probability <span class="value-display" id="probValue">100%</span>
+<input type="range" id="stepProbability" min="0" max="100" value="100">
+</label>
+</div>
+<div class="control">
+<label>Velocity <span class="value-display" id="velValue">100%</span>
+<input type="range" id="stepVelocity" min="0" max="150" value="100">
+</label>
+</div>
+<div class="control">
+<label>Length
+<select id="stepLength">
+<option value="0.25">1/64</option>
+<option value="0.5">1/32</option>
+<option value="1" selected>1/16</option>
+<option value="2">1/8</option>
+<option value="4">1/4</option>
+</select>
+</label>
+</div>
+<div class="control">
+<button class="randomize-btn" id="randomizeProb" style="width: 100%;">🎲 RAND PROB</button>
+</div>
+<div class="control">
+<button class="randomize-btn" id="randomizeVel" style="width: 100%;">🎲 RAND VEL</button>
+</div>
+<div class="control">
+<button class="randomize-btn" id="randomizeLen" style="width: 100%;">🎲 RAND LENGTH</button>
+</div>
+<div class="control">
+<button id="clearStepBtn" style="width: 100%;">✕ CLEAR STEP</button>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>EXPORT</h2>
+<div style="display: flex; gap: 15px; flex-wrap: wrap;">
+<button id="exportWavBtn" class="export">⬇ EXPORT CHORD (WAV)</button>
+<button id="exportMidiBtn" class="export">⬇ EXPORT PATTERN (MIDI)</button>
+</div>
+</div>
+
+<div class="section">
+<h2>SOUND DESIGN</h2>
+<div class="controls">
+<div class="control-group">
+<h3>SYNTHESIS</h3>
+<div class="control">
+<label>Waveform
+<select id="waveform">
+<option value="sine">Sine</option>
+<option value="triangle">Triangle</option>
+<option value="sawtooth" selected>Sawtooth</option>
+<option value="square">Square</option>
+</select>
+</label>
+</div>
+<div class="control">
+<label>Detune <span class="value-display" id="detuneValue">20</span>
+<input type="range" id="detune" min="0" max="50" value="20">
+</label>
+</div>
+<div class="control">
+<label>Attack <span class="value-display" id="attackValue">0.01s</span>
+<input type="range" id="attack" min="0.001" max="0.1" value="0.01" step="0.001">
+</label>
+</div>
+<div class="control">
+<label>Decay <span class="value-display" id="decayValue">1.5s</span>
+<input type="range" id="decay" min="0.5" max="5" value="1.5" step="0.1">
+</label>
+</div>
+<button class="randomize-btn" onclick="generator.randomizeSynthesis()">🎲 RANDOMIZE</button>
+</div>
+
+<div class="control-group">
+<h3>FILTER</h3>
+<div class="control">
+<label>Start Cutoff <span class="value-display" id="cutoffValue">3000Hz</span>
+<input type="range" id="cutoff" min="200" max="8000" value="3000" step="50">
+</label>
+</div>
+<div class="control">
+<label>End Cutoff <span class="value-display" id="endCutoffValue">400Hz</span>
+<input type="range" id="endCutoff" min="100" max="8000" value="400" step="50">
+</label>
+</div>
+<div class="control">
+<label>Resonance <span class="value-display" id="resonanceValue">8</span>
+<input type="range" id="resonance" min="0" max="30" value="8" step="0.5">
+</label>
+</div>
+<div class="control">
+<label>Filter Sweep <span class="value-display" id="filterSweepValue">0.8s</span>
+<input type="range" id="filterSweep" min="0.1" max="3" value="0.8" step="0.1">
+</label>
+</div>
+<button class="randomize-btn" onclick="generator.randomizeFilter()">🎲 RANDOMIZE</button>
+</div>
+
+<div class="control-group">
+<h3>DELAY</h3>
+<div class="control">
+<label>Time <span class="value-display" id="delayTimeValue">0.375s</span>
+<input type="range" id="delayTime" min="0.05" max="2" value="0.375" step="0.025">
+</label>
+</div>
+<div class="control">
+<label>Feedback <span class="value-display" id="feedbackValue">0.65</span>
+<input type="range" id="feedback" min="0" max="0.85" value="0.65" step="0.05">
+</label>
+</div>
+<div class="control">
+<label>Mix <span class="value-display" id="delayMixValue">0.5</span>
+<input type="range" id="delayMix" min="0" max="1" value="0.5" step="0.05">
+</label>
+</div>
+<button class="randomize-btn" onclick="generator.randomizeDelay()">🎲 RANDOMIZE</button>
+</div>
+
+<div class="control-group">
+<h3>REVERB</h3>
+<div class="control">
+<label>Mix <span class="value-display" id="reverbMixValue">0.6</span>
+<input type="range" id="reverbMix" min="0" max="1" value="0.6" step="0.05">
+</label>
+</div>
+<div class="control">
+<label>Chord Type
+<select id="chordType">
+<option value="minor7" selected>Minor 7th</option>
+<option value="minor9">Minor 9th</option>
+<option value="sus2">Sus2</option>
+<option value="sus4">Sus4</option>
+<option value="major7">Major 7th</option>
+<option value="dom7">Dominant 7th</option>
+</select>
+</label>
+</div>
+<div class="control">
+<label>Volume <span class="value-display" id="volumeValue">0.7</span>
+<input type="range" id="volume" min="0" max="1" value="0.7" step="0.05">
+</label>
+</div>
+<button class="randomize-btn" onclick="generator.randomizeReverb()">🎲 RANDOMIZE</button>
+</div>
+</div>
+</div>
+</div>
+
+<script>
