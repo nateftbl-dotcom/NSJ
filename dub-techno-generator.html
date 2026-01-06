@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dub Techno Chord Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff88;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: rgba(0, 255, 136, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .control-group h3 {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #00ffcc;
+        }
+
+        .control {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #00ff88;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 255, 136, 0.2);
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #00ff88;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #00ff88;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #00ff88;
+        }
+
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .chord-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .chord-display h2 {
+            font-size: 1.5em;
+            color: #00ffcc;
+            margin-bottom: 10px;
+        }
+
+        .chord-notes {
+            font-size: 1.2em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DUB TECHNO CHORD GENERATOR</h1>
+
+        <div class="chord-display">
+            <h2>Current Chord</h2>
+            <div class="chord-notes" id="chordDisplay">Click Generate to create a chord</div>
+        </div>
+
+        <div class="button-container">
+            <button id="generateBtn">GENERATE CHORD</button>
+            <button id="stopBtn" disabled>STOP</button>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>SYNTHESIS</h3>
+                <div class="control">
+                    <label>
+                        Waveform
+                        <select id="waveform">
+                            <option value="sine">Sine</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="sawtooth" selected>Sawtooth</option>
+                            <option value="square">Square</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Detune <span class="value-display" id="detuneValue">15</span>
+                        <input type="range" id="detune" min="0" max="50" value="15" step="1">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Attack <span class="value-display" id="attackValue">0.1s</span>
+                        <input type="range" id="attack" min="0.01" max="2" value="0.1" step="0.01">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Release <span class="value-display" id="releaseValue">2.0s</span>
+                        <input type="range" id="release" min="0.1" max="5" value="2.0" step="0.1">
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>FILTER</h3>
+                <div class="control">
+                    <label>
+                        Filter Type
+                        <select id="filterType">
+                            <option value="lowpass" selected>Low Pass</option>
+                            <option value="highpass">High Pass</option>
+                            <option value="bandpass">Band Pass</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Cutoff <span class="value-display" id="cutoffValue">800Hz</span>
+                        <input type="range" id="cutoff" min="100" max="8000" value="800" step="50">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Resonance <span class="value-display" id="resonanceValue">5</span>
+                        <input type="range" id="resonance" min="0" max="30" value="5" step="0.5">
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>DELAY</h3>
+                <div class="control">
+                    <label>
+                        Delay Time <span class="value-display" id="delayTimeValue">0.375s</span>
+                        <input type="range" id="delayTime" min="0.1" max="2" value="0.375" step="0.025">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Feedback <span class="value-display" id="feedbackValue">0.4</span>
+                        <input type="range" id="feedback" min="0" max="0.8" value="0.4" step="0.05">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Delay Mix <span class="value-display" id="delayMixValue">0.3</span>
+                        <input type="range" id="delayMix" min="0" max="1" value="0.3" step="0.05">
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>REVERB & TONE</h3>
+                <div class="control">
+                    <label>
+                        Reverb Mix <span class="value-display" id="reverbMixValue">0.35</span>
+                        <input type="range" id="reverbMix" min="0" max="1" value="0.35" step="0.05">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Chord Type
+                        <select id="chordType">
+                            <option value="minor7" selected>Minor 7th</option>
+                            <option value="minor9">Minor 9th</option>
+                            <option value="sus2">Sus2</option>
+                            <option value="sus4">Sus4</option>
+                            <option value="major7">Major 7th</option>
+                            <option value="dom7">Dominant 7th</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="control">
+                    <label>
+                        Volume <span class="value-display" id="volumeValue">0.15</span>
+                        <input type="range" id="volume" min="0" max="0.5" value="0.15" step="0.01">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="info">
+            <strong>DUB TECHNO SOUND DESIGN</strong><br>
+            This generator creates deep, atmospheric chords perfect for dub techno.<br>
+            Experiment with low-pass filtering, delay feedback, and chord voicings to craft your sound.
+        </div>
+    </div>
+
+    <script>
+        class DubTechnoGenerator {
+            constructor() {
+                this.audioContext = null;
+                this.isPlaying = false;
+                this.oscillators = [];
+                this.gainNodes = [];
+                this.currentChord = [];
+
+                this.initAudioContext();
+                this.setupControls();
+                this.setupEventListeners();
+            }
+
+            initAudioContext() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Master gain
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 0.15;
+
+                // Filter
+                this.filter = this.audioContext.createBiquadFilter();
+                this.filter.type = 'lowpass';
+                this.filter.frequency.value = 800;
+                this.filter.Q.value = 5;
+
+                // Delay
+                this.delay = this.audioContext.createDelay(5.0);
+                this.delay.delayTime.value = 0.375;
+
+                this.delayFeedback = this.audioContext.createGain();
+                this.delayFeedback.gain.value = 0.4;
+
+                this.delayMixGain = this.audioContext.createGain();
+                this.delayMixGain.gain.value = 0.3;
+
+                this.dryGain = this.audioContext.createGain();
+                this.dryGain.gain.value = 0.7;
+
+                // Reverb (convolver)
+                this.reverb = this.audioContext.createConvolver();
+                this.createReverbImpulse();
+
+                this.reverbMixGain = this.audioContext.createGain();
+                this.reverbMixGain.gain.value = 0.35;
+
+                this.reverbDryGain = this.audioContext.createGain();
+                this.reverbDryGain.gain.value = 0.65;
+
+                // Connect effects chain
+                this.setupEffectsChain();
+            }
+
+            createReverbImpulse() {
+                const length = this.audioContext.sampleRate * 3;
+                const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
+                const left = impulse.getChannelData(0);
+                const right = impulse.getChannelData(1);
+
+                for (let i = 0; i < length; i++) {
+                    const decay = Math.pow(1 - i / length, 3);
+                    left[i] = (Math.random() * 2 - 1) * decay;
+                    right[i] = (Math.random() * 2 - 1) * decay;
+                }
+
+                this.reverb.buffer = impulse;
+            }
+
+            setupEffectsChain() {
+                // Delay chain
+                this.delay.connect(this.delayFeedback);
+                this.delayFeedback.connect(this.delay);
+                this.delay.connect(this.delayMixGain);
+
+                // Main mixer for delay
+                this.delayMixer = this.audioContext.createGain();
+                this.dryGain.connect(this.delayMixer);
+                this.delayMixGain.connect(this.delayMixer);
+
+                // Reverb chain
+                this.delayMixer.connect(this.reverb);
+                this.reverb.connect(this.reverbMixGain);
+                this.delayMixer.connect(this.reverbDryGain);
+
+                // Final mixer
+                this.finalMixer = this.audioContext.createGain();
+                this.reverbMixGain.connect(this.finalMixer);
+                this.reverbDryGain.connect(this.finalMixer);
+
+                // Master chain
+                this.finalMixer.connect(this.masterGain);
+                this.masterGain.connect(this.audioContext.destination);
+            }
+
+            setupControls() {
+                this.controls = {
+                    waveform: document.getElementById('waveform'),
+                    detune: document.getElementById('detune'),
+                    attack: document.getElementById('attack'),
+                    release: document.getElementById('release'),
+                    filterType: document.getElementById('filterType'),
+                    cutoff: document.getElementById('cutoff'),
+                    resonance: document.getElementById('resonance'),
+                    delayTime: document.getElementById('delayTime'),
+                    feedback: document.getElementById('feedback'),
+                    delayMix: document.getElementById('delayMix'),
+                    reverbMix: document.getElementById('reverbMix'),
+                    chordType: document.getElementById('chordType'),
+                    volume: document.getElementById('volume')
+                };
+            }
+
+            setupEventListeners() {
+                // Generate button
+                document.getElementById('generateBtn').addEventListener('click', () => {
+                    this.generateAndPlay();
+                });
+
+                // Stop button
+                document.getElementById('stopBtn').addEventListener('click', () => {
+                    this.stop();
+                });
+
+                // Control updates
+                this.controls.waveform.addEventListener('change', () => this.updateOscillatorType());
+                this.controls.filterType.addEventListener('change', (e) => {
+                    this.filter.type = e.target.value;
+                });
+
+                this.controls.cutoff.addEventListener('input', (e) => {
+                    this.filter.frequency.value = parseFloat(e.target.value);
+                    document.getElementById('cutoffValue').textContent = e.target.value + 'Hz';
+                });
+
+                this.controls.resonance.addEventListener('input', (e) => {
+                    this.filter.Q.value = parseFloat(e.target.value);
+                    document.getElementById('resonanceValue').textContent = e.target.value;
+                });
+
+                this.controls.delayTime.addEventListener('input', (e) => {
+                    this.delay.delayTime.value = parseFloat(e.target.value);
+                    document.getElementById('delayTimeValue').textContent = e.target.value + 's';
+                });
+
+                this.controls.feedback.addEventListener('input', (e) => {
+                    this.delayFeedback.gain.value = parseFloat(e.target.value);
+                    document.getElementById('feedbackValue').textContent = e.target.value;
+                });
+
+                this.controls.delayMix.addEventListener('input', (e) => {
+                    const mix = parseFloat(e.target.value);
+                    this.delayMixGain.gain.value = mix;
+                    this.dryGain.gain.value = 1 - mix;
+                    document.getElementById('delayMixValue').textContent = e.target.value;
+                });
+
+                this.controls.reverbMix.addEventListener('input', (e) => {
+                    const mix = parseFloat(e.target.value);
+                    this.reverbMixGain.gain.value = mix;
+                    this.reverbDryGain.gain.value = 1 - mix;
+                    document.getElementById('reverbMixValue').textContent = e.target.value;
+                });
+
+                this.controls.volume.addEventListener('input', (e) => {
+                    this.masterGain.gain.value = parseFloat(e.target.value);
+                    document.getElementById('volumeValue').textContent = e.target.value;
+                });
+
+                this.controls.detune.addEventListener('input', (e) => {
+                    document.getElementById('detuneValue').textContent = e.target.value;
+                    if (this.isPlaying) {
+                        this.updateDetune();
+                    }
+                });
+
+                this.controls.attack.addEventListener('input', (e) => {
+                    document.getElementById('attackValue').textContent = e.target.value + 's';
+                });
+
+                this.controls.release.addEventListener('input', (e) => {
+                    document.getElementById('releaseValue').textContent = e.target.value + 's';
+                });
+            }
+
+            generateChord() {
+                const rootNotes = ['C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2'];
+                const root = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+                const rootFreq = this.noteToFreq(root);
+
+                const chordType = this.controls.chordType.value;
+                let intervals = [];
+                let chordName = '';
+
+                switch(chordType) {
+                    case 'minor7':
+                        intervals = [0, 3, 7, 10]; // Root, minor 3rd, perfect 5th, minor 7th
+                        chordName = 'min7';
+                        break;
+                    case 'minor9':
+                        intervals = [0, 3, 7, 10, 14]; // + major 9th
+                        chordName = 'min9';
+                        break;
+                    case 'sus2':
+                        intervals = [0, 2, 7]; // Root, major 2nd, perfect 5th
+                        chordName = 'sus2';
+                        break;
+                    case 'sus4':
+                        intervals = [0, 5, 7]; // Root, perfect 4th, perfect 5th
+                        chordName = 'sus4';
+                        break;
+                    case 'major7':
+                        intervals = [0, 4, 7, 11]; // Root, major 3rd, perfect 5th, major 7th
+                        chordName = 'maj7';
+                        break;
+                    case 'dom7':
+                        intervals = [0, 4, 7, 10]; // Root, major 3rd, perfect 5th, minor 7th
+                        chordName = '7';
+                        break;
+                }
+
+                const chord = intervals.map(interval => rootFreq * Math.pow(2, interval / 12));
+
+                // Display chord
+                const rootNoteName = root.slice(0, -1);
+                document.getElementById('chordDisplay').textContent = `${rootNoteName}${chordName}`;
+
+                return chord;
+            }
+
+            noteToFreq(note) {
+                const notes = {
+                    'C': -9, 'C#': -8, 'D': -7, 'D#': -6, 'E': -5, 'F': -4,
+                    'F#': -3, 'G': -2, 'G#': -1, 'A': 0, 'A#': 1, 'B': 2
+                };
+
+                const noteName = note.slice(0, -1);
+                const octave = parseInt(note.slice(-1));
+                const semitone = notes[noteName];
+                const a4 = 440;
+
+                return a4 * Math.pow(2, (octave - 4) + semitone / 12);
+            }
+
+            generateAndPlay() {
+                if (this.isPlaying) {
+                    this.stop();
+                }
+
+                this.currentChord = this.generateChord();
+                this.playChord(this.currentChord);
+
+                document.getElementById('generateBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+            }
+
+            playChord(frequencies) {
+                const now = this.audioContext.currentTime;
+                const attack = parseFloat(this.controls.attack.value);
+                const waveform = this.controls.waveform.value;
+                const detuneAmount = parseFloat(this.controls.detune.value);
+
+                this.oscillators = [];
+                this.gainNodes = [];
+
+                frequencies.forEach((freq, index) => {
+                    // Create multiple oscillators per note for thickness
+                    for (let i = 0; i < 3; i++) {
+                        const osc = this.audioContext.createOscillator();
+                        const gain = this.audioContext.createGain();
+
+                        osc.type = waveform;
+                        osc.frequency.value = freq;
+
+                        // Detune for chorus effect
+                        if (i === 1) osc.detune.value = detuneAmount;
+                        if (i === 2) osc.detune.value = -detuneAmount;
+
+                        // Individual voice gain
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(0.08 / frequencies.length, now + attack);
+
+                        // Connect through filter
+                        osc.connect(gain);
+                        gain.connect(this.filter);
+
+                        this.oscillators.push(osc);
+                        this.gainNodes.push(gain);
+                    }
+                });
+
+                // Connect filter to effects chain
+                this.filter.connect(this.delay);
+                this.filter.connect(this.dryGain);
+
+                // Start all oscillators
+                this.oscillators.forEach(osc => osc.start(now));
+
+                this.isPlaying = true;
+            }
+
+            updateOscillatorType() {
+                if (this.isPlaying) {
+                    const waveform = this.controls.waveform.value;
+                    this.oscillators.forEach(osc => {
+                        osc.type = waveform;
+                    });
+                }
+            }
+
+            updateDetune() {
+                if (this.isPlaying) {
+                    const detuneAmount = parseFloat(this.controls.detune.value);
+                    for (let i = 0; i < this.oscillators.length; i++) {
+                        const mod = i % 3;
+                        if (mod === 1) {
+                            this.oscillators[i].detune.value = detuneAmount;
+                        } else if (mod === 2) {
+                            this.oscillators[i].detune.value = -detuneAmount;
+                        }
+                    }
+                }
+            }
+
+            stop() {
+                if (!this.isPlaying) return;
+
+                const now = this.audioContext.currentTime;
+                const release = parseFloat(this.controls.release.value);
+
+                this.gainNodes.forEach(gain => {
+                    gain.gain.cancelScheduledValues(now);
+                    gain.gain.setValueAtTime(gain.gain.value, now);
+                    gain.gain.linearRampToValueAtTime(0, now + release);
+                });
+
+                setTimeout(() => {
+                    this.oscillators.forEach(osc => {
+                        osc.stop();
+                        osc.disconnect();
+                    });
+                    this.oscillators = [];
+                    this.gainNodes = [];
+                    this.isPlaying = false;
+
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                }, release * 1000 + 100);
+            }
+        }
+
+        // Initialize the generator when page loads
+        window.addEventListener('load', () => {
+            const generator = new DubTechnoGenerator();
+        });
+    </script>
+</body>
+</html>
