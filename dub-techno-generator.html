@@ -191,15 +191,56 @@
             color: #00ff88;
             font-weight: bold;
         }
+
+        .status-message {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+            min-height: 20px;
+            color: #00ffcc;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            }
+        }
+
+        .chord-display.playing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            button {
+                padding: 12px 30px;
+                font-size: 1em;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>DUB TECHNO CHORD GENERATOR</h1>
 
-        <div class="chord-display">
+        <div class="status-message" id="statusMessage">Ready - Tap Generate to start</div>
+
+        <div class="chord-display" id="chordDisplayContainer">
             <h2>Current Chord</h2>
-            <div class="chord-notes" id="chordDisplay">Click Generate to create a chord</div>
+            <div class="chord-notes" id="chordDisplay">-</div>
         </div>
 
         <div class="button-container">
@@ -322,7 +363,9 @@
         <div class="info">
             <strong>DUB TECHNO SOUND DESIGN</strong><br>
             This generator creates deep, atmospheric chords perfect for dub techno.<br>
-            Experiment with low-pass filtering, delay feedback, and chord voicings to craft your sound.
+            Experiment with low-pass filtering, delay feedback, and chord voicings to craft your sound.<br><br>
+            <strong>Mobile Users:</strong> Tap "Generate Chord" to start. Each tap creates a new random chord.<br>
+            Watch the chord display pulse when playing. Adjust controls in real-time.
         </div>
     </div>
 
@@ -334,10 +377,23 @@
                 this.oscillators = [];
                 this.gainNodes = [];
                 this.currentChord = [];
+                this.isAudioContextResumed = false;
 
                 this.initAudioContext();
                 this.setupControls();
                 this.setupEventListeners();
+            }
+
+            async resumeAudioContext() {
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+                this.isAudioContextResumed = true;
+            }
+
+            showStatus(message) {
+                const statusEl = document.getElementById('statusMessage');
+                statusEl.textContent = message;
             }
 
             initAudioContext() {
@@ -570,16 +626,61 @@
                 return a4 * Math.pow(2, (octave - 4) + semitone / 12);
             }
 
-            generateAndPlay() {
-                if (this.isPlaying) {
-                    this.stop();
+            async generateAndPlay() {
+                try {
+                    // Resume audio context for iOS
+                    await this.resumeAudioContext();
+
+                    if (this.isPlaying) {
+                        await this.stopImmediate();
+                        // Small delay before generating new chord
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    this.showStatus('Generating chord...');
+
+                    this.currentChord = this.generateChord();
+                    this.playChord(this.currentChord);
+
+                    const chordName = document.getElementById('chordDisplay').textContent;
+                    this.showStatus(`Playing: ${chordName}`);
+
+                    // Add visual feedback
+                    document.getElementById('chordDisplayContainer').classList.add('playing');
+
+                    document.getElementById('generateBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                } catch (error) {
+                    console.error('Error generating chord:', error);
+                    this.showStatus('Error: ' + error.message);
                 }
+            }
 
-                this.currentChord = this.generateChord();
-                this.playChord(this.currentChord);
+            stopImmediate() {
+                return new Promise((resolve) => {
+                    if (!this.isPlaying) {
+                        resolve();
+                        return;
+                    }
 
-                document.getElementById('generateBtn').disabled = true;
-                document.getElementById('stopBtn').disabled = false;
+                    const now = this.audioContext.currentTime;
+                    this.gainNodes.forEach(gain => {
+                        gain.gain.cancelScheduledValues(now);
+                        gain.gain.setValueAtTime(gain.gain.value, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                    });
+
+                    setTimeout(() => {
+                        this.oscillators.forEach(osc => {
+                            osc.stop();
+                            osc.disconnect();
+                        });
+                        this.oscillators = [];
+                        this.gainNodes = [];
+                        this.isPlaying = false;
+                        resolve();
+                    }, 150);
+                });
             }
 
             playChord(frequencies) {
@@ -656,6 +757,8 @@
                 const now = this.audioContext.currentTime;
                 const release = parseFloat(this.controls.release.value);
 
+                this.showStatus('Stopping...');
+
                 this.gainNodes.forEach(gain => {
                     gain.gain.cancelScheduledValues(now);
                     gain.gain.setValueAtTime(gain.gain.value, now);
@@ -671,8 +774,13 @@
                     this.gainNodes = [];
                     this.isPlaying = false;
 
+                    // Remove visual feedback
+                    document.getElementById('chordDisplayContainer').classList.remove('playing');
+
                     document.getElementById('generateBtn').disabled = false;
                     document.getElementById('stopBtn').disabled = true;
+
+                    this.showStatus('Stopped - Ready for next chord');
                 }, release * 1000 + 100);
             }
         }
