@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUB TECHNO STUDIO - Complete Production Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff88;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+            color: #00ffcc;
+            font-size: 1.3em;
+        }
+
+        /* Sequencer Grid */
+        .sequencer-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .step {
+            aspect-ratio: 1;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            color: #00ff88;
+            padding: 2px;
+        }
+
+        .step-number {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .step-prob {
+            font-size: 0.8em;
+            color: #ff8800;
+        }
+
+        .step:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: scale(1.05);
+        }
+
+        .step.active {
+            background: #00ff88;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+        }
+
+        .step.enabled {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        .step.selected {
+            border-color: #ff8800;
+            border-width: 3px;
+        }
+
+        .step.playing {
+            animation: playPulse 0.3s ease-out;
+        }
+
+        @keyframes playPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 20px rgba(0, 255, 136, 1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Transport Controls */
+        .transport {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        button.stop {
+            background: linear-gradient(135deg, #ff3333 0%, #cc0000 100%);
+        }
+
+        button.export {
+            background: linear-gradient(135deg, #3388ff 0%, #0066cc 100%);
+        }
+
+        .randomize-btn {
+            padding: 8px 15px;
+            font-size: 0.85em;
+            background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(0, 255, 136, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .control-group h3 {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #00ffcc;
+        }
+
+        .control {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #00ff88;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 255, 136, 0.2);
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #00ff88;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #00ff88;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 1.1em;
+            color: #00ffcc;
+        }
+
+        .chord-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.15);
+            border-radius: 8px;
+            font-size: 1.5em;
+            color: #00ff88;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.08);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sequencer-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎹 DUB TECHNO STUDIO - Complete Production Platform</h1>
+
+        <div class="status" id="status">Ready - Set up your sequence with full generative control</div>
+
+        <!-- Sequencer Section -->
+        <div class="section">
+            <h2>16-STEP SEQUENCER</h2>
+            <div class="sequencer-grid" id="sequencerGrid"></div>
+
+            <div class="transport">
+                <button id="playSeqBtn">▶ PLAY SEQUENCE</button>
+                <button id="stopSeqBtn" class="stop" disabled>■ STOP</button>
+                <label style="display: inline-flex; align-items: center; gap: 10px;">
+                    BPM:
+                    <input type="number" id="bpm" value="120" min="60" max="200" style="width: 80px;">
+                </label>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="kickEnabled" checked>
+                    <label for="kickEnabled">808 Kick Drum</label>
+                </div>
+            </div>
+
+            <div class="chord-display" id="stepChordDisplay">Select a step to edit</div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button id="generateStepChord">🎲 GENERATE CHORD FOR STEP</button>
+                <button id="clearStepBtn">✕ CLEAR STEP</button>
+            </div>
+
+            <!-- Per-Step Controls -->
+            <div class="step-controls">
+                <div class="control">
+                    <label>Probability <span class="value-display" id="probValue">100%</span>
+                        <input type="range" id="probability" min="0" max="100" value="100">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>Velocity <span class="value-display" id="velocityValue">100%</span>
+                        <input type="range" id="velocity" min="0" max="150" value="100">
+                    </label>
+                </div>
+                <div class="control">
+                    <label>Step Length
+                        <select id="stepLength">
+                            <option value="0.0625">1/64</option>
+                            <option value="0.125">1/32</option>
+                            <option value="0.25" selected>1/16</option>
+                            <option value="0.5">1/8</option>
+                            <option value="1">1/4</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                <button class="randomize-btn" onclick="studio.randomizeProbabilities()">🎲 RANDOM PROBABILITIES</button>
+                <button class="randomize-btn" onclick="studio.randomizeVelocities()">🎲 RANDOM VELOCITIES</button>
+                <button class="randomize-btn" onclick="studio.randomizeStepLengths()">🎲 RANDOM LENGTHS</button>
+            </div>
+        </div>
+
+        <!-- Generative Controls -->
+        <div class="section">
+            <h2>GENERATIVE CONTROLS</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <h3>TIMING</h3>
+                    <div class="control">
+                        <label>Swing <span class="value-display" id="swingValue">0%</span>
+                            <input type="range" id="swing" min="0" max="75" value="0">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Humanize <span class="value-display" id="humanizeValue">0ms</span>
+                            <input type="range" id="humanize" min="0" max="50" value="0">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="section">
+            <h2>EXPORT</h2>
+            <p style="margin-bottom: 15px;">Export your work as audio or MIDI files:</p>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button id="exportWavBtn" class="export">⬇ EXPORT CURRENT CHORD AS WAV</button>
+                <button id="exportMidiBtn" class="export">⬇ EXPORT PATTERN AS MIDI</button>
+            </div>
+        </div>
+
+        <!-- Sound Controls -->
+        <div class="section">
+            <h2>SOUND DESIGN</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <h3>SYNTHESIS</h3>
+                    <div class="control">
+                        <label>Waveform
+                            <select id="waveform">
+                                <option value="sine">Sine</option>
+                                <option value="triangle">Triangle</option>
+                                <option value="sawtooth" selected>Sawtooth</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Detune <span class="value-display" id="detuneValue">20</span>
+                            <input type="range" id="detune" min="0" max="50" value="20">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Attack <span class="value-display" id="attackValue">0.01s</span>
+                            <input type="range" id="attack" min="0.001" max="0.1" value="0.01" step="0.001">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Decay <span class="value-display" id="decayValue">1.5s</span>
+                            <input type="range" id="decay" min="0.5" max="5" value="1.5" step="0.1">
+                        </label>
+                    </div>
+                    <button class="randomize-btn" onclick="studio.randomizeSynthesis()">🎲 RANDOMIZE</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>FILTER</h3>
+                    <div class="control">
+                        <label>Start Cutoff <span class="value-display" id="cutoffValue">3000Hz</span>
+                            <input type="range" id="cutoff" min="200" max="8000" value="3000" step="50">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>End Cutoff <span class="value-display" id="endCutoffValue">400Hz</span>
+                            <input type="range" id="endCutoff" min="100" max="8000" value="400" step="50">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Resonance <span class="value-display" id="resonanceValue">8</span>
+                            <input type="range" id="resonance" min="0" max="30" value="8" step="0.5">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Filter Sweep <span class="value-display" id="filterSweepValue">0.8s</span>
+                            <input type="range" id="filterSweep" min="0.1" max="3" value="0.8" step="0.1">
+                        </label>
+                    </div>
+                    <button class="randomize-btn" onclick="studio.randomizeFilter()">🎲 RANDOMIZE</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>DELAY</h3>
+                    <div class="control">
+                        <label>Time <span class="value-display" id="delayTimeValue">0.375s</span>
+                            <input type="range" id="delayTime" min="0.05" max="2" value="0.375" step="0.025">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Feedback <span class="value-display" id="feedbackValue">0.65</span>
+                            <input type="range" id="feedback" min="0" max="0.85" value="0.65" step="0.05">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Mix <span class="value-display" id="delayMixValue">0.5</span>
+                            <input type="range" id="delayMix" min="0" max="1" value="0.5" step="0.05">
+                        </label>
+                    </div>
+                    <button class="randomize-btn" onclick="studio.randomizeDelay()">🎲 RANDOMIZE</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>REVERB</h3>
+                    <div class="control">
+                        <label>Mix <span class="value-display" id="reverbMixValue">0.6</span>
+                            <input type="range" id="reverbMix" min="0" max="1" value="0.6" step="0.05">
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Chord Type
+                            <select id="chordType">
+                                <option value="minor7" selected>Minor 7th</option>
+                                <option value="minor9">Minor 9th</option>
+                                <option value="sus2">Sus2</option>
+                                <option value="sus4">Sus4</option>
+                                <option value="major7">Major 7th</option>
+                                <option value="dom7">Dominant 7th</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="control">
+                        <label>Volume <span class="value-display" id="volumeValue">0.7</span>
+                            <input type="range" id="volume" min="0" max="1" value="0.7" step="0.05">
+                        </label>
+                    </div>
+                    <button class="randomize-btn" onclick="studio.randomizeReverb()">🎲 RANDOMIZE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WAV Encoder
+        function encodeWAV(samples, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            let offset = 44;
+            for (let i = 0; i < samples.length; i++) {
+                const s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                offset += 2;
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        // MIDI Encoder
+        function encodeMIDI(pattern, bpm) {
+            const ticksPerBeat = 480;
+            const microsecondsPerBeat = Math.floor(60000000 / bpm);
+
+            // Calculate MIDI events
+            const events = [];
+
+            pattern.forEach((step, i) => {
+                if (!step.enabled || !step.chord) return;
+
+                const startTick = Math.floor(i * ticksPerBeat * step.stepLength);
+                const duration = Math.floor(ticksPerBeat * step.stepLength * 0.9); // 90% of step length
+
+                step.chord.forEach(freq => {
+                    const midiNote = Math.round(69 + 12 * Math.log2(freq / 440));
+                    const velocity = Math.floor(Math.min(127, (step.velocity / 100) * 100));
+
+                    // Note on
+                    events.push({
+                        time: startTick,
+                        type: 'noteOn',
+                        note: midiNote,
+                        velocity: velocity
+                    });
+
+                    // Note off
+                    events.push({
+                        time: startTick + duration,
+                        type: 'noteOff',
+                        note: midiNote,
+                        velocity: 0
+                    });
+                });
+            });
+
+            // Sort events by time
+            events.sort((a, b) => a.time - b.time);
+
+            // Build MIDI file
+            const header = new Uint8Array([
+                0x4D, 0x54, 0x68, 0x64, // "MThd"
+                0x00, 0x00, 0x00, 0x06, // Header length
+                0x00, 0x00,             // Format 0
+                0x00, 0x01,             // 1 track
+                (ticksPerBeat >> 8) & 0xFF, ticksPerBeat & 0xFF // Ticks per beat
+            ]);
+
+            // Build track
+            const trackEvents = [];
+
+            // Tempo event
+            trackEvents.push(0x00, 0xFF, 0x51, 0x03,
+                (microsecondsPerBeat >> 16) & 0xFF,
+                (microsecondsPerBeat >> 8) & 0xFF,
+                microsecondsPerBeat & 0xFF);
+
+            // Add note events
+            let lastTime = 0;
+            events.forEach(event => {
+                const deltaTime = event.time - lastTime;
+                lastTime = event.time;
+
+                // Variable length quantity for delta time
+                const deltaBytes = [];
+                let value = deltaTime;
+                deltaBytes.unshift(value & 0x7F);
+                value >>= 7;
+                while (value > 0) {
+                    deltaBytes.unshift((value & 0x7F) | 0x80);
+                    value >>= 7;
+                }
+
+                trackEvents.push(...deltaBytes);
+
+                if (event.type === 'noteOn') {
+                    trackEvents.push(0x90, event.note, event.velocity);
+                } else {
+                    trackEvents.push(0x80, event.note, event.velocity);
+                }
+            });
+
+            // End of track
+            trackEvents.push(0x00, 0xFF, 0x2F, 0x00);
+
+            const trackHeader = new Uint8Array([
+                0x4D, 0x54, 0x72, 0x6B, // "MTrk"
+                (trackEvents.length >> 24) & 0xFF,
+                (trackEvents.length >> 16) & 0xFF,
+                (trackEvents.length >> 8) & 0xFF,
+                trackEvents.length & 0xFF
+            ]);
+
+            const midiData = new Uint8Array(header.length + trackHeader.length + trackEvents.length);
+            midiData.set(header, 0);
+            midiData.set(trackHeader, header.length);
+            midiData.set(trackEvents, header.length + trackHeader.length);
+
+            return new Blob([midiData], { type: 'audio/midi' });
+        }
+
+        class DubTechnoStudio {
+            constructor() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.selectedStep = 0;
+                this.currentStep = -1;
+                this.isPlaying = false;
+                this.stepInterval = null;
+
+                // Enhanced sequencer pattern with generative parameters
+                this.pattern = Array(16).fill(null).map((_, i) => ({
+                    enabled: i % 4 === 0,
+                    chord: null,
+                    name: '',
+                    probability: 100,
+                    velocity: 100,
+                    stepLength: 0.25  // 1/16 note default
+                }));
+
+                this.initAudio();
+                this.setupControls();
+                this.setupUI();
+                this.setupEventListeners();
+                this.renderSequencer();
+            }
+
+            initAudio() {
+                // Master gain - LOUD
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 0.7;
+
+                // Filter
+                this.filter = this.audioContext.createBiquadFilter();
+                this.filter.type = 'lowpass';
+                this.filter.frequency.value = 3000;
+                this.filter.Q.value = 8;
+
+                // Delay
+                this.delay = this.audioContext.createDelay(5.0);
+                this.delay.delayTime.value = 0.375;
+                this.delayFeedback = this.audioContext.createGain();
+                this.delayFeedback.gain.value = 0.65;
+                this.delayMixGain = this.audioContext.createGain();
+                this.delayMixGain.gain.value = 0.5;
+                this.dryGain = this.audioContext.createGain();
+                this.dryGain.gain.value = 0.5;
+
+                // Reverb
+                this.reverb = this.audioContext.createConvolver();
+                this.createReverbImpulse();
+                this.reverbMixGain = this.audioContext.createGain();
+                this.reverbMixGain.gain.value = 0.6;
+                this.reverbDryGain = this.audioContext.createGain();
+                this.reverbDryGain.gain.value = 0.4;
+
+                this.setupEffectsChain();
+            }
+
+            createReverbImpulse() {
+                const length = this.audioContext.sampleRate * 4;
+                const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
+                const left = impulse.getChannelData(0);
+                const right = impulse.getChannelData(1);
+
+                for (let i = 0; i < length; i++) {
+                    const decay = Math.pow(1 - i / length, 3);
+                    left[i] = (Math.random() * 2 - 1) * decay;
+                    right[i] = (Math.random() * 2 - 1) * decay;
+                }
+
+                this.reverb.buffer = impulse;
+            }
+
+            setupEffectsChain() {
+                this.sourceGain = this.audioContext.createGain();
+                this.sourceGain.gain.value = 1.0;
+                this.sourceGain.connect(this.filter);
+
+                this.delay.connect(this.delayFeedback);
+                this.delayFeedback.connect(this.delay);
+                this.delay.connect(this.delayMixGain);
+
+                this.filter.connect(this.delay);
+                this.filter.connect(this.dryGain);
+
+                this.delayMixer = this.audioContext.createGain();
+                this.dryGain.connect(this.delayMixer);
+                this.delayMixGain.connect(this.delayMixer);
+
+                this.delayMixer.connect(this.reverb);
+                this.reverb.connect(this.reverbMixGain);
+                this.delayMixer.connect(this.reverbDryGain);
+
+                this.finalMixer = this.audioContext.createGain();
+                this.reverbMixGain.connect(this.finalMixer);
+                this.reverbDryGain.connect(this.finalMixer);
+
+                this.finalMixer.connect(this.masterGain);
+                this.masterGain.connect(this.audioContext.destination);
+            }
+
+            setupControls() {
+                this.controls = {
+                    waveform: document.getElementById('waveform'),
+                    detune: document.getElementById('detune'),
+                    attack: document.getElementById('attack'),
+                    decay: document.getElementById('decay'),
+                    cutoff: document.getElementById('cutoff'),
+                    endCutoff: document.getElementById('endCutoff'),
+                    filterSweep: document.getElementById('filterSweep'),
+                    resonance: document.getElementById('resonance'),
+                    delayTime: document.getElementById('delayTime'),
+                    feedback: document.getElementById('feedback'),
+                    delayMix: document.getElementById('delayMix'),
+                    reverbMix: document.getElementById('reverbMix'),
+                    chordType: document.getElementById('chordType'),
+                    volume: document.getElementById('volume'),
+                    bpm: document.getElementById('bpm'),
+                    kickEnabled: document.getElementById('kickEnabled'),
+                    probability: document.getElementById('probability'),
+                    velocity: document.getElementById('velocity'),
+                    stepLength: document.getElementById('stepLength'),
+                    swing: document.getElementById('swing'),
+                    humanize: document.getElementById('humanize')
+                };
+            }
+
+            setupUI() {
+                const grid = document.getElementById('sequencerGrid');
+                for (let i = 0; i < 16; i++) {
+                    const step = document.createElement('div');
+                    step.className = 'step';
+                    step.innerHTML = `<div class="step-number">${i + 1}</div><div class="step-prob" id="prob-${i}">100%</div>`;
+                    step.dataset.step = i;
+                    step.onclick = () => this.selectStep(i);
+                    step.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        this.toggleStep(i);
+                    };
+                    grid.appendChild(step);
+                }
+            }
+
+            renderSequencer() {
+                const steps = document.querySelectorAll('.step');
+                steps.forEach((el, i) => {
+                    el.classList.toggle('enabled', this.pattern[i].enabled && this.pattern[i].chord);
+                    el.classList.toggle('selected', i === this.selectedStep);
+                    el.classList.toggle('active', i === this.currentStep);
+
+                    // Update probability display
+                    const probEl = el.querySelector('.step-prob');
+                    if (probEl) {
+                        probEl.textContent = `${this.pattern[i].probability}%`;
+                    }
+                });
+
+                const step = this.pattern[this.selectedStep];
+                const display = document.getElementById('stepChordDisplay');
+                if (step.chord && step.name) {
+                    display.textContent = `Step ${this.selectedStep + 1}: ${step.name} (${step.probability}%, ${step.velocity}% vel)`;
+                } else {
+                    display.textContent = `Step ${this.selectedStep + 1}: Empty`;
+                }
+
+                // Update step control values
+                this.controls.probability.value = step.probability;
+                document.getElementById('probValue').textContent = step.probability + '%';
+                this.controls.velocity.value = step.velocity;
+                document.getElementById('velocityValue').textContent = step.velocity + '%';
+                this.controls.stepLength.value = step.stepLength;
+            }
+
+            selectStep(index) {
+                this.selectedStep = index;
+                this.renderSequencer();
+            }
+
+            toggleStep(index) {
+                this.pattern[index].enabled = !this.pattern[index].enabled;
+                this.renderSequencer();
+            }
+
+            setupEventListeners() {
+                document.getElementById('playSeqBtn').onclick = () => this.playSequence();
+                document.getElementById('stopSeqBtn').onclick = () => this.stopSequence();
+                document.getElementById('generateStepChord').onclick = () => this.generateChordForStep();
+                document.getElementById('clearStepBtn').onclick = () => this.clearStep();
+                document.getElementById('exportWavBtn').onclick = () => this.exportWAV();
+                document.getElementById('exportMidiBtn').onclick = () => this.exportMIDI();
+
+                // Per-step controls update pattern
+                this.controls.probability.oninput = () => {
+                    const val = parseInt(this.controls.probability.value);
+                    this.pattern[this.selectedStep].probability = val;
+                    document.getElementById('probValue').textContent = val + '%';
+                    this.renderSequencer();
+                };
+
+                this.controls.velocity.oninput = () => {
+                    const val = parseInt(this.controls.velocity.value);
+                    this.pattern[this.selectedStep].velocity = val;
+                    document.getElementById('velocityValue').textContent = val + '%';
+                    this.renderSequencer();
+                };
+
+                this.controls.stepLength.onchange = () => {
+                    this.pattern[this.selectedStep].stepLength = parseFloat(this.controls.stepLength.value);
+                };
+
+                // Swing and humanize
+                this.controls.swing.oninput = () => {
+                    document.getElementById('swingValue').textContent = this.controls.swing.value + '%';
+                };
+
+                this.controls.humanize.oninput = () => {
+                    document.getElementById('humanizeValue').textContent = this.controls.humanize.value + 'ms';
+                };
+
+                // Control updates
+                Object.keys(this.controls).forEach(key => {
+                    const el = this.controls[key];
+                    if (el.type === 'range' && !['probability', 'velocity', 'swing', 'humanize'].includes(key)) {
+                        el.oninput = () => {
+                            const valueEl = document.getElementById(key + 'Value');
+                            if (valueEl) {
+                                const suffix = key.includes('Time') || key.includes('Sweep') || key.includes('attack') || key.includes('decay') ? 's' :
+                                             key.includes('cutoff') || key.includes('Cutoff') ? 'Hz' : '';
+                                valueEl.textContent = el.value + suffix;
+                            }
+                        };
+                    }
+                });
+
+                this.controls.feedback.oninput = () => {
+                    this.delayFeedback.gain.value = parseFloat(this.controls.feedback.value);
+                    document.getElementById('feedbackValue').textContent = this.controls.feedback.value;
+                };
+
+                this.controls.delayTime.oninput = () => {
+                    this.delay.delayTime.value = parseFloat(this.controls.delayTime.value);
+                    document.getElementById('delayTimeValue').textContent = this.controls.delayTime.value + 's';
+                };
+
+                this.controls.delayMix.oninput = () => {
+                    const mix = parseFloat(this.controls.delayMix.value);
+                    this.delayMixGain.gain.value = mix;
+                    this.dryGain.gain.value = 1 - mix;
+                    document.getElementById('delayMixValue').textContent = mix;
+                };
+
+                this.controls.reverbMix.oninput = () => {
+                    const mix = parseFloat(this.controls.reverbMix.value);
+                    this.reverbMixGain.gain.value = mix;
+                    this.reverbDryGain.gain.value = 1 - mix;
+                    document.getElementById('reverbMixValue').textContent = mix;
+                };
+
+                this.controls.volume.oninput = () => {
+                    this.masterGain.gain.value = parseFloat(this.controls.volume.value);
+                    document.getElementById('volumeValue').textContent = this.controls.volume.value;
+                };
+
+                this.controls.resonance.oninput = () => {
+                    this.filter.Q.value = parseFloat(this.controls.resonance.value);
+                    document.getElementById('resonanceValue').textContent = this.controls.resonance.value;
+                };
+            }
+
+            generateChord() {
+                const rootNotes = ['C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2'];
+                const root = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+                const rootFreq = this.noteToFreq(root);
+
+                const chordType = this.controls.chordType.value;
+                let intervals = [];
+                let chordName = '';
+
+                switch(chordType) {
+                    case 'minor7':
+                        intervals = [0, 3, 7, 10];
+                        chordName = 'min7';
+                        break;
+                    case 'minor9':
+                        intervals = [0, 3, 7, 10, 14];
+                        chordName = 'min9';
+                        break;
+                    case 'sus2':
+                        intervals = [0, 2, 7];
+                        chordName = 'sus2';
+                        break;
+                    case 'sus4':
+                        intervals = [0, 5, 7];
+                        chordName = 'sus4';
+                        break;
+                    case 'major7':
+                        intervals = [0, 4, 7, 11];
+                        chordName = 'maj7';
+                        break;
+                    case 'dom7':
+                        intervals = [0, 4, 7, 10];
+                        chordName = '7';
+                        break;
+                }
+
+                const chord = intervals.map(interval => rootFreq * Math.pow(2, interval / 12));
+                const rootNoteName = root.slice(0, -1);
+                return { frequencies: chord, name: rootNoteName + chordName };
+            }
+
+            noteToFreq(note) {
+                const notes = {
+                    'C': -9, 'C#': -8, 'D': -7, 'D#': -6, 'E': -5, 'F': -4,
+                    'F#': -3, 'G': -2, 'G#': -1, 'A': 0, 'A#': 1, 'B': 2
+                };
+                const noteName = note.slice(0, -1);
+                const octave = parseInt(note.slice(-1));
+                const semitone = notes[noteName];
+                return 440 * Math.pow(2, (octave - 4) + semitone / 12);
+            }
+
+            generateChordForStep() {
+                const chord = this.generateChord();
+                this.pattern[this.selectedStep].chord = chord.frequencies;
+                this.pattern[this.selectedStep].name = chord.name;
+                this.pattern[this.selectedStep].enabled = true;
+                this.renderSequencer();
+                document.getElementById('status').textContent = `Generated ${chord.name} for step ${this.selectedStep + 1}`;
+            }
+
+            clearStep() {
+                this.pattern[this.selectedStep].chord = null;
+                this.pattern[this.selectedStep].name = '';
+                this.pattern[this.selectedStep].enabled = false;
+                this.renderSequencer();
+                document.getElementById('status').textContent = `Cleared step ${this.selectedStep + 1}`;
+            }
+
+            playChord(frequencies, velocityMod = 1.0) {
+                if (!frequencies) return;
+
+                const now = this.audioContext.currentTime;
+                const attack = parseFloat(this.controls.attack.value);
+                const decay = parseFloat(this.controls.decay.value);
+                const waveform = this.controls.waveform.value;
+                const detuneAmount = parseFloat(this.controls.detune.value);
+
+                const startCutoff = parseFloat(this.controls.cutoff.value);
+                const endCutoff = parseFloat(this.controls.endCutoff.value);
+                const filterSweepTime = parseFloat(this.controls.filterSweep.value);
+
+                const totalDuration = attack + decay;
+
+                // TRIANGLE WAVE FIX + VELOCITY
+                const waveGainMultiplier = waveform === 'triangle' ? 1.5 : 1.0;
+
+                frequencies.forEach((freq) => {
+                    for (let i = 0; i < 3; i++) {
+                        const osc = this.audioContext.createOscillator();
+                        const gain = this.audioContext.createGain();
+
+                        osc.type = waveform;
+                        osc.frequency.value = freq;
+
+                        if (i === 1) osc.detune.value = detuneAmount;
+                        if (i === 2) osc.detune.value = -detuneAmount;
+
+                        const peakGain = (0.25 / frequencies.length) * waveGainMultiplier * velocityMod;
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(peakGain, now + attack);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + attack + decay);
+
+                        osc.connect(gain);
+                        gain.connect(this.sourceGain);
+
+                        osc.start(now);
+                        osc.stop(now + totalDuration + 0.1);
+                    }
+                });
+
+                // Filter sweep
+                this.filter.frequency.cancelScheduledValues(now);
+                this.filter.frequency.setValueAtTime(startCutoff, now);
+                this.filter.frequency.exponentialRampToValueAtTime(Math.max(endCutoff, 20), now + filterSweepTime);
+            }
+
+            play808Kick() {
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            async playSequence() {
+                await this.audioContext.resume();
+
+                this.isPlaying = true;
+                this.currentStep = -1;
+                document.getElementById('playSeqBtn').disabled = true;
+                document.getElementById('stopSeqBtn').disabled = false;
+                document.getElementById('status').textContent = '▶ Sequence playing with generative controls...';
+
+                const bpm = parseFloat(this.controls.bpm.value);
+                const baseDuration = (60 / bpm / 4) * 1000; // 16th note base
+                const swingPercent = parseFloat(this.controls.swing.value) / 100;
+                const humanizeMs = parseFloat(this.controls.humanize.value);
+
+                const tick = () => {
+                    if (!this.isPlaying) return;
+
+                    this.currentStep = (this.currentStep + 1) % 16;
+                    this.renderSequencer();
+
+                    const step = this.pattern[this.currentStep];
+
+                    // Calculate timing with swing
+                    let stepDelay = 0;
+                    if (this.currentStep % 2 === 1) {
+                        stepDelay = baseDuration * swingPercent;
+                    }
+
+                    // Add humanize (random variation)
+                    if (humanizeMs > 0) {
+                        stepDelay += (Math.random() - 0.5) * 2 * humanizeMs;
+                    }
+
+                    // Play kick on steps 0, 4, 8, 12
+                    if (this.controls.kickEnabled.checked && this.currentStep % 4 === 0) {
+                        setTimeout(() => this.play808Kick(), Math.max(0, stepDelay));
+                    }
+
+                    // Probability check
+                    const shouldPlay = (Math.random() * 100) < step.probability;
+
+                    // Play chord if step is enabled and probability passes
+                    if (step.enabled && step.chord && shouldPlay) {
+                        const velocityMod = step.velocity / 100;
+                        setTimeout(() => {
+                            this.playChord(step.chord, velocityMod);
+                            document.querySelectorAll('.step')[this.currentStep].classList.add('playing');
+                            setTimeout(() => {
+                                document.querySelectorAll('.step')[this.currentStep].classList.remove('playing');
+                            }, 300);
+                        }, Math.max(0, stepDelay));
+                    }
+
+                    // Calculate next step timing based on step length
+                    const nextStepDuration = baseDuration * (step.stepLength / 0.25);
+                    this.stepInterval = setTimeout(tick, nextStepDuration);
+                };
+
+                tick();
+            }
+
+            stopSequence() {
+                this.isPlaying = false;
+                if (this.stepInterval) {
+                    clearTimeout(this.stepInterval);
+                    this.stepInterval = null;
+                }
+                this.currentStep = -1;
+                this.renderSequencer();
+                document.getElementById('playSeqBtn').disabled = false;
+                document.getElementById('stopSeqBtn').disabled = true;
+                document.getElementById('status').textContent = 'Sequence stopped';
+            }
+
+            async exportWAV() {
+                const step = this.pattern[this.selectedStep];
+                if (!step.chord) {
+                    alert('Please generate a chord for this step first!');
+                    return;
+                }
+
+                document.getElementById('status').textContent = 'Rendering audio...';
+
+                const sampleRate = 44100;
+                const attack = parseFloat(this.controls.attack.value);
+                const decay = parseFloat(this.controls.decay.value);
+                const duration = attack + decay + 3;
+
+                const offlineCtx = new OfflineAudioContext(1, sampleRate * duration, sampleRate);
+
+                // Recreate effects chain offline
+                const masterGain = offlineCtx.createGain();
+                masterGain.gain.value = parseFloat(this.controls.volume.value);
+
+                const filter = offlineCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.Q.value = parseFloat(this.controls.resonance.value);
+
+                const delay = offlineCtx.createDelay(5.0);
+                delay.delayTime.value = parseFloat(this.controls.delayTime.value);
+                const delayFeedback = offlineCtx.createGain();
+                delayFeedback.gain.value = parseFloat(this.controls.feedback.value);
+                const delayMixGain = offlineCtx.createGain();
+                const delayMix = parseFloat(this.controls.delayMix.value);
+                delayMixGain.gain.value = delayMix;
+                const dryGain = offlineCtx.createGain();
+                dryGain.gain.value = 1 - delayMix;
+
+                const reverb = offlineCtx.createConvolver();
+                reverb.buffer = this.reverb.buffer;
+                const reverbMixGain = offlineCtx.createGain();
+                const reverbMix = parseFloat(this.controls.reverbMix.value);
+                reverbMixGain.gain.value = reverbMix;
+                const reverbDryGain = offlineCtx.createGain();
+                reverbDryGain.gain.value = 1 - reverbMix;
+
+                const sourceGain = offlineCtx.createGain();
+                sourceGain.gain.value = 1.0;
+
+                // Connect chain
+                sourceGain.connect(filter);
+                delay.connect(delayFeedback);
+                delayFeedback.connect(delay);
+                delay.connect(delayMixGain);
+                filter.connect(delay);
+                filter.connect(dryGain);
+
+                const delayMixer = offlineCtx.createGain();
+                dryGain.connect(delayMixer);
+                delayMixGain.connect(delayMixer);
+
+                delayMixer.connect(reverb);
+                reverb.connect(reverbMixGain);
+                delayMixer.connect(reverbDryGain);
+
+                const finalMixer = offlineCtx.createGain();
+                reverbMixGain.connect(finalMixer);
+                reverbDryGain.connect(finalMixer);
+                finalMixer.connect(masterGain);
+                masterGain.connect(offlineCtx.destination);
+
+                // Generate sound
+                const waveform = this.controls.waveform.value;
+                const detuneAmount = parseFloat(this.controls.detune.value);
+                const startCutoff = parseFloat(this.controls.cutoff.value);
+                const endCutoff = parseFloat(this.controls.endCutoff.value);
+                const filterSweepTime = parseFloat(this.controls.filterSweep.value);
+
+                const waveGainMultiplier = waveform === 'triangle' ? 1.5 : 1.0;
+                const velocityMod = step.velocity / 100;
+
+                step.chord.forEach((freq) => {
+                    for (let i = 0; i < 3; i++) {
+                        const osc = offlineCtx.createOscillator();
+                        const gain = offlineCtx.createGain();
+
+                        osc.type = waveform;
+                        osc.frequency.value = freq;
+                        if (i === 1) osc.detune.value = detuneAmount;
+                        if (i === 2) osc.detune.value = -detuneAmount;
+
+                        const peakGain = (0.25 / step.chord.length) * waveGainMultiplier * velocityMod;
+                        gain.gain.setValueAtTime(0, 0);
+                        gain.gain.linearRampToValueAtTime(peakGain, attack);
+                        gain.gain.exponentialRampToValueAtTime(0.001, attack + decay);
+
+                        osc.connect(gain);
+                        gain.connect(sourceGain);
+
+                        osc.start(0);
+                        osc.stop(attack + decay + 0.1);
+                    }
+                });
+
+                // Filter sweep
+                filter.frequency.setValueAtTime(startCutoff, 0);
+                filter.frequency.exponentialRampToValueAtTime(Math.max(endCutoff, 20), filterSweepTime);
+
+                // Render
+                const renderedBuffer = await offlineCtx.startRendering();
+                const samples = renderedBuffer.getChannelData(0);
+
+                // Encode to WAV
+                const wavBlob = encodeWAV(samples, sampleRate);
+                const url = URL.createObjectURL(wavBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${step.name || 'chord'}_step${this.selectedStep + 1}.wav`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                document.getElementById('status').textContent = `✓ Exported ${step.name} as WAV!`;
+            }
+
+            exportMIDI() {
+                const bpm = parseFloat(this.controls.bpm.value);
+                const midiBlob = encodeMIDI(this.pattern, bpm);
+                const url = URL.createObjectURL(midiBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dub_techno_pattern_${bpm}bpm.mid`;
+                a.click();
+                URL.revokeObjectURL(url);
+                document.getElementById('status').textContent = '✓ Exported pattern as MIDI!';
+            }
+
+            randomizeProbabilities() {
+                this.pattern.forEach(step => {
+                    step.probability = Math.floor(Math.random() * 101);
+                });
+                this.renderSequencer();
+                document.getElementById('status').textContent = '🎲 Probabilities randomized!';
+            }
+
+            randomizeVelocities() {
+                this.pattern.forEach(step => {
+                    step.velocity = Math.floor(Math.random() * 151);
+                });
+                this.renderSequencer();
+                document.getElementById('status').textContent = '🎲 Velocities randomized!';
+            }
+
+            randomizeStepLengths() {
+                const lengths = [0.0625, 0.125, 0.25, 0.5, 1];
+                this.pattern.forEach(step => {
+                    step.stepLength = lengths[Math.floor(Math.random() * lengths.length)];
+                });
+                document.getElementById('status').textContent = '🎲 Step lengths randomized!';
+            }
+
+            randomizeSynthesis() {
+                const waveforms = ['sine', 'triangle', 'sawtooth', 'square'];
+                this.controls.waveform.value = waveforms[Math.floor(Math.random() * waveforms.length)];
+
+                const detune = Math.floor(Math.random() * 40) + 5;
+                this.controls.detune.value = detune;
+                document.getElementById('detuneValue').textContent = detune;
+
+                const attack = (Math.random() * 0.05 + 0.001).toFixed(3);
+                this.controls.attack.value = attack;
+                document.getElementById('attackValue').textContent = attack + 's';
+
+                const decay = (Math.random() * 3 + 0.8).toFixed(1);
+                this.controls.decay.value = decay;
+                document.getElementById('decayValue').textContent = decay + 's';
+
+                document.getElementById('status').textContent = '🎲 Synthesis randomized!';
+            }
+
+            randomizeFilter() {
+                const startCutoff = Math.floor(Math.random() * 5000) + 1000;
+                this.controls.cutoff.value = startCutoff;
+                document.getElementById('cutoffValue').textContent = startCutoff + 'Hz';
+
+                const endCutoff = Math.floor(Math.random() * 800) + 200;
+                this.controls.endCutoff.value = endCutoff;
+                document.getElementById('endCutoffValue').textContent = endCutoff + 'Hz';
+
+                const resonance = (Math.random() * 20 + 3).toFixed(1);
+                this.controls.resonance.value = resonance;
+                document.getElementById('resonanceValue').textContent = resonance;
+                this.filter.Q.value = parseFloat(resonance);
+
+                const sweep = (Math.random() * 2 + 0.3).toFixed(1);
+                this.controls.filterSweep.value = sweep;
+                document.getElementById('filterSweepValue').textContent = sweep + 's';
+
+                document.getElementById('status').textContent = '🎲 Filter randomized!';
+            }
+
+            randomizeDelay() {
+                const delayTime = (Math.random() * 1.5 + 0.1).toFixed(3);
+                this.controls.delayTime.value = delayTime;
+                document.getElementById('delayTimeValue').textContent = delayTime + 's';
+                this.delay.delayTime.value = parseFloat(delayTime);
+
+                const feedback = (Math.random() * 0.6 + 0.2).toFixed(2);
+                this.controls.feedback.value = feedback;
+                document.getElementById('feedbackValue').textContent = feedback;
+                this.delayFeedback.gain.value = parseFloat(feedback);
+
+                const mix = (Math.random() * 0.6 + 0.2).toFixed(2);
+                this.controls.delayMix.value = mix;
+                document.getElementById('delayMixValue').textContent = mix;
+                this.delayMixGain.gain.value = parseFloat(mix);
+                this.dryGain.gain.value = 1 - parseFloat(mix);
+
+                document.getElementById('status').textContent = '🎲 Delay randomized!';
+            }
+
+            randomizeReverb() {
+                const reverbMix = (Math.random() * 0.6 + 0.2).toFixed(2);
+                this.controls.reverbMix.value = reverbMix;
+                document.getElementById('reverbMixValue').textContent = reverbMix;
+                this.reverbMixGain.gain.value = parseFloat(reverbMix);
+                this.reverbDryGain.gain.value = 1 - parseFloat(reverbMix);
+
+                const chordTypes = ['minor7', 'minor9', 'sus2', 'sus4', 'major7', 'dom7'];
+                this.controls.chordType.value = chordTypes[Math.floor(Math.random() * chordTypes.length)];
+
+                document.getElementById('status').textContent = '🎲 Reverb randomized!';
+            }
+        }
+
+        let studio;
+        window.addEventListener('load', () => {
+            studio = new DubTechnoStudio();
+        });
+    </script>
+</body>
+</html>
