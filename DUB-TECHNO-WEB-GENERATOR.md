@@ -35,11 +35,19 @@ A browser-based dub techno chord generator built with the Web Audio API. No samp
 
 ## How to Use
 
-1. **Open** `dub-techno-generator.html` in any modern web browser
-2. **Click** "GENERATE CHORD" to create and play a random chord
-3. **Adjust** controls in real-time while the chord plays
-4. **Click** "STOP" to end the current chord with smooth release
-5. **Experiment** with different settings to craft your signature dub techno sound
+1. **Open** `dub-techno-generator.html` in any modern web browser (Chrome, Firefox, Safari)
+2. **Click** "GENERATE NEW CHORD" to create a random chord
+3. **Click** "PLAY CHORD" to hear the generated chord
+4. **Adjust** controls in real-time while the chord plays
+5. **Click** "STOP" to end playback with smooth envelope release
+6. **Generate** different chords until you find one you like, then play it again
+7. **Experiment** with different waveforms, filters, and effects to craft your signature sound
+
+### Workflow
+- **Generate** creates a new random chord but doesn't play it
+- **Play** plays the current chord (you can play the same chord multiple times)
+- **Stop** ends playback gracefully
+- This separation lets you preview chord options before committing to one
 
 ## Sound Design Tips
 
@@ -86,10 +94,20 @@ Output
 ```
 
 ### Browser Compatibility
-- Chrome/Edge: Full support
-- Firefox: Full support
-- Safari: Full support (iOS may require user interaction)
+- Chrome/Edge: Full support ✓
+- Firefox: Full support ✓
+- Safari (Desktop): Full support ✓
+- Safari (iOS/iPhone): Full support ✓ (requires tapping Generate first)
 - Requires modern browser with Web Audio API support
+
+### iOS/iPhone Instructions
+1. Open the HTML file in Safari
+2. Tap "GENERATE NEW CHORD" - this activates the audio context
+3. Tap "PLAY CHORD" - you should now hear sound
+4. If no sound, check that your phone isn't on silent mode
+5. Increase volume if needed
+
+The first tap on any button will activate audio on iOS devices.
 
 ## Performance Notes
 
